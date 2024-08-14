@@ -23,7 +23,7 @@ export class UserService {
     const user = await this.userRepo.findOne({ email });
     if (!user) return null;
 
-    const isMatched = this.validatePassword({
+    const isMatched = await this.validatePassword({
       plain: password,
       hash: user.password,
     });
