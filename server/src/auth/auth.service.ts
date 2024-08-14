@@ -10,11 +10,19 @@ import { SignInDTO } from './dtos/signIn.dto';
 import { Response } from 'express';
 import { KeyRepository } from './repositories/key.repo';
 import { User } from 'src/user/schemas/user.schema';
+import { ERRORCODES } from 'src/core/error/code';
+import { ERRORMESSAGE } from 'src/core/error/message';
+import ms from 'ms';
+
+interface TokenOptions {
+  secret: string;
+  expiresIn: string;
+}
 
 @Injectable()
 export class AuthService {
-  private accessTokenOptions: object;
-  private refreshTokenOptions: object;
+  private accessTokenOptions: TokenOptions;
+  private refreshTokenOptions: TokenOptions;
 
   constructor(
     private keyRepo: KeyRepository,
@@ -38,7 +46,10 @@ export class AuthService {
     /* Valdate user existance */
     const user: User = await this.userService.validateUser(email, password);
     if (!user) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException({
+        message: ERRORMESSAGE.AUTH_INVALID_CREDENTALS,
+        errorCode: ERRORCODES.AUTH_INVALID_CREDENTALS,
+      });
     }
     /* Convert _id to string */
     const userId = user._id.toString();
@@ -54,7 +65,10 @@ export class AuthService {
     await this.keyRepo.updatedRefreshToken(refreshToken, userId);
 
     /* Sign cookies */
-    response.cookie('refresh_token', refreshToken);
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      maxAge: +ms(this.refreshTokenOptions.expiresIn),
+    });
 
     /* Return */
     return {
@@ -71,27 +85,31 @@ export class AuthService {
         this.accessTokenOptions,
       );
       /* Verify token */
-      await this.jwtService.verify(accessToken, this.accessTokenOptions);
+      await this.verifyAccessToken(accessToken);
       /* Return token */
       return accessToken;
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.AUTH_FAIL_SIGN_ACCESS_TOKEN,
+      });
     }
   }
 
   async signRefreshToken(payload: any): Promise<string> {
     try {
       /* Sign token */
-      const accessToken = await this.jwtService.sign(
+      const refreshToken = await this.jwtService.sign(
         payload,
         this.refreshTokenOptions,
       );
       /* Verify token */
-      await this.jwtService.verify(accessToken, this.refreshTokenOptions);
+      await this.verifyRefreshToken(refreshToken);
       /* Return token */
-      return accessToken;
+      return refreshToken;
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.AUTH_FAIL_SIGN_REFRESH_TOKEN,
+      });
     }
   }
 
@@ -108,7 +126,22 @@ export class AuthService {
     try {
       return await this.jwtService.verify(accessToken, this.accessTokenOptions);
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_ACCESS_TOKEN,
+      });
+    }
+  }
+
+  async verifyRefreshToken(refreshToken: string): Promise<unknown> {
+    try {
+      return await this.jwtService.verify(
+        refreshToken,
+        this.refreshTokenOptions,
+      );
+    } catch (error) {
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_REFRESH_TOKEN,
+      });
     }
   }
 
@@ -116,13 +149,12 @@ export class AuthService {
     refreshToken: string,
   ): Promise<{ accessToken: string; refreshToken: string }> {
     try {
-      const payload = await this.jwtService.decode(
-        refreshToken,
-        this.accessTokenOptions,
-      );
+      const payload = await this.jwtService.decode(refreshToken);
       return this.signTokenPair(payload);
     } catch (error) {
-      throw new InternalServerErrorException();
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_REFRESH_TOKEN,
+      });
     }
   }
 }
