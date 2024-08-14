@@ -1,7 +1,7 @@
 import { UserRepository } from './repositories/user.repo';
 import { Injectable } from '@nestjs/common';
 import { User } from './schemas/user.schema';
-import * as bcrypt from 'bcrypt';
+import bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
@@ -14,7 +14,7 @@ export class UserService {
     return hash;
   }
 
-  async validatePassword({ plain, hash }): Promise<boolean> {
+  async validatePassword(plain: string, hash: string): Promise<boolean> {
     const isMatch = await bcrypt.compare(plain, hash);
     return isMatch;
   }
@@ -23,10 +23,7 @@ export class UserService {
     const user = await this.userRepo.findOne({ email });
     if (!user) return null;
 
-    const isMatched = await this.validatePassword({
-      plain: password,
-      hash: user.password,
-    });
+    const isMatched = await this.validatePassword(password, user.password);
 
     return isMatched ? user : null;
   }

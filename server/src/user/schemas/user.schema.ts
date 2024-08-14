@@ -16,7 +16,7 @@ export class User {
   email: string;
 
   @Prop({ required: true })
-  password: number;
+  password: string;
 
   @Prop({ required: true })
   role: string;

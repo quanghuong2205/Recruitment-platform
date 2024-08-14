@@ -3,8 +3,10 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
-import { APP_GUARD } from '@nestjs/core';
+import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
+import { HttpExceptionFilter } from './exception-filters/http-exception-filter';
+import { FormatResponseInterceptor } from './interceptors/format-response.interceptor';
 
 @Module({
   imports: [
@@ -30,8 +32,18 @@ import { AuthGuard } from './guards/auth.guard';
 
   providers: [
     {
+      provide: APP_FILTER,
+      useClass: HttpExceptionFilter,
+    },
+
+    {
       provide: APP_GUARD,
       useClass: AuthGuard,
+    },
+
+    {
+      provide: APP_INTERCEPTOR,
+      useClass: FormatResponseInterceptor,
     },
   ],
 })
