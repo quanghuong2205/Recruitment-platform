@@ -1,6 +1,7 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { Model } from 'mongoose';
 import { ERRORCODES } from '../error/code';
+import { select } from 'src/utils/mongoose/select.util';
 
 export class BaseRepository<T> {
   protected repo: Model<T>;
@@ -13,9 +14,15 @@ export class BaseRepository<T> {
     return this.repo;
   }
 
-  async findMany(filter: Record<string, any>): Promise<T[]> {
+  async findMany(
+    filter: Record<string, any>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+  ): Promise<T[]> {
     try {
-      return this.repo.find(filter);
+      return this.repo
+        .find(filter)
+        .select(select(selectedProps, unSelectedProps));
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
@@ -23,9 +30,15 @@ export class BaseRepository<T> {
     }
   }
 
-  async findOne(filter: Record<string, any>): Promise<T> {
+  async findOne(
+    filter: Record<string, any>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+  ): Promise<T> {
     try {
-      return this.repo.findOne(filter);
+      return this.repo
+        .findOne(filter)
+        .select(select(selectedProps, unSelectedProps));
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,

@@ -2,6 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { BaseRepository } from './repository.base';
 import aqp from 'api-query-params';
 import { ERRORCODES } from '../error/code';
+import { select } from 'src/utils/mongoose/select.util';
 
 export class BaseCRUDService<T, CDTO, UDTO> {
   private repository: BaseRepository<T>;
@@ -12,12 +13,16 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     this.name = name;
   }
 
-  async findOne(filter: Record<string, any>, select?: Record<string, number>) {
+  async findOne(
+    filter: Record<string, any>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+  ) {
     try {
       const data = await this.repository
         .getRepo()
         .findOne(filter)
-        .select(select);
+        .select(select(selectedProps, unSelectedProps));
       return data;
     } catch (error) {
       throw new InternalServerErrorException({
@@ -30,7 +35,8 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     query: string,
     page: number,
     limit: number,
-    select?: Record<string, number>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
   ) {
     /* Parse query string to object */
     const parsedQuery = aqp(query);
@@ -46,7 +52,7 @@ export class BaseCRUDService<T, CDTO, UDTO> {
       .find(parsedQuery?.filter ?? {})
       .limit(limit)
       .skip(skip)
-      .select(select);
+      .select(select(selectedProps, unSelectedProps));
   }
 
   async create(payload: CDTO): Promise<any> {
