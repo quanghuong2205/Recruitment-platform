@@ -7,7 +7,11 @@ export class BaseRepository<T> {
     this.repo = repo;
   }
 
-  async find(filter: Record<string, any>): Promise<T[]> {
+  getRepo() {
+    return this.repo;
+  }
+
+  async findMany(filter: Record<string, any>): Promise<T[]> {
     return this.repo.find(filter);
   }
 

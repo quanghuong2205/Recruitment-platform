@@ -70,7 +70,7 @@ export class AuthService {
       maxAge: +ms(this.refreshTokenOptions.expiresIn),
     });
 
-    /* Return */
+    /* Return data */
     return {
       user,
       access_token: accessToken,
