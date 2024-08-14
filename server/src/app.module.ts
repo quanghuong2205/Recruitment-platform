@@ -28,11 +28,11 @@ import { AuthGuard } from './guards/auth.guard';
     UserModule,
   ],
 
-  providers: [
-    {
-      provide: APP_GUARD,
-      useClass: AuthGuard,
-    },
-  ],
+  // providers: [
+  //   {
+  //     provide: APP_GUARD,
+  //     useClass: AuthGuard,
+  //   },
+  // ],
 })
 export class AppModule {}

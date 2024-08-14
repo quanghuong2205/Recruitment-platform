@@ -8,8 +8,8 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignInDTO } from './dtos/signIn.dto';
 import { Response } from 'express';
-import { IUser } from 'src/user/user.interface';
 import { KeyRepository } from './repositories/key.repo';
+import { User } from 'src/user/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -36,20 +36,22 @@ export class AuthService {
   async signIn(authInfor: SignInDTO, response: Response) {
     const { email, password } = authInfor;
     /* Valdate user existance */
-    const user: IUser = await this.userService.validateUser(email, password);
+    const user: User = await this.userService.validateUser(email, password);
     if (!user) {
       throw new UnauthorizedException();
     }
+    /* Convert _id to string */
+    const userId = user._id.toString();
 
     /* Sign token */
     const { accessToken, refreshToken } = await this.signTokenPair({
-      _id: user._id,
+      _id: userId,
       email,
       name: user.name,
     });
 
     /* Save token */
-    await this.keyRepo.updatedRefreshToken(refreshToken, user._id);
+    await this.keyRepo.updatedRefreshToken(refreshToken, userId);
 
     /* Sign cookies */
     response.cookie('refresh_token', refreshToken);

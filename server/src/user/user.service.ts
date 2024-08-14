@@ -1,12 +1,10 @@
+import { UserRepository } from './repositories/user.repo';
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
 import { User } from './schemas/user.schema';
-import { Model } from 'mongoose';
-import { IUser } from './user.interface';
 
 @Injectable()
 export class UserService {
-  constructor(@InjectModel(User.name) private userModel: Model<User>) {}
+  constructor(private userRepo: UserRepository) {}
 
   hashPassword() {}
 
@@ -14,12 +12,8 @@ export class UserService {
     return true;
   }
 
-  async validateUser(email: string, password: string): Promise<IUser | null> {
-    const user: IUser | null = await this.userModel
-      .findOne({
-        email,
-      })
-      .lean();
+  async validateUser(email: string, password: string): Promise<User> {
+    const user = await this.userRepo.findOne({ email });
     if (!user) return null;
 
     const isMatched = this.validatePassword({
