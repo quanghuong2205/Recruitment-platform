@@ -1,19 +1,26 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
-import { Key } from './schemas/key.schema';
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from '@nestjs/common';
+import { UserService } from './../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
+import { SignInDTO } from './dtos/signIn.dto';
+import { Response } from 'express';
+import { IUser } from 'src/user/user.interface';
+import { KeyRepository } from './repositories/key.repo';
 
 @Injectable()
 export class AuthService {
-  private accessTokenOptions;
-  private refreshTokenOptions;
+  private accessTokenOptions: object;
+  private refreshTokenOptions: object;
 
   constructor(
-    @InjectModel(Key.name) private keyModel: Model<Key>,
+    private keyRepo: KeyRepository,
     private jwtService: JwtService,
     private configService: ConfigService,
+    private userService: UserService,
   ) {
     this.accessTokenOptions = {
       secret: this.configService.get<string>('ACCESS_TOKEN_SECRET'),
@@ -26,11 +33,32 @@ export class AuthService {
     };
   }
 
-  async saveToken(refreshToken: string, userID: string) {
-    await this.keyModel.create({
-      user_id: new Types.ObjectId(userID),
-      refresh_token: refreshToken,
+  async signIn(authInfor: SignInDTO, response: Response) {
+    const { email, password } = authInfor;
+    /* Valdate user existance */
+    const user: IUser = await this.userService.validateUser(email, password);
+    if (!user) {
+      throw new UnauthorizedException();
+    }
+
+    /* Sign token */
+    const { accessToken, refreshToken } = await this.signTokenPair({
+      _id: user._id,
+      email,
+      name: user.name,
     });
+
+    /* Save token */
+    await this.keyRepo.updatedRefreshToken(refreshToken, user._id);
+
+    /* Sign cookies */
+    response.cookie('refresh_token', refreshToken);
+
+    /* Return */
+    return {
+      user,
+      access_token: accessToken,
+    };
   }
 
   async signAccessToken(payload: any): Promise<string> {
@@ -42,7 +70,7 @@ export class AuthService {
       );
       /* Verify token */
       await this.jwtService.verify(accessToken, this.accessTokenOptions);
-
+      /* Return token */
       return accessToken;
     } catch (error) {
       throw new InternalServerErrorException();
@@ -58,7 +86,7 @@ export class AuthService {
       );
       /* Verify token */
       await this.jwtService.verify(accessToken, this.refreshTokenOptions);
-
+      /* Return token */
       return accessToken;
     } catch (error) {
       throw new InternalServerErrorException();
@@ -74,7 +102,7 @@ export class AuthService {
     };
   }
 
-  async verifyAccessToken(accessToken: string) {
+  async verifyAccessToken(accessToken: string): Promise<unknown> {
     try {
       return await this.jwtService.verify(accessToken, this.accessTokenOptions);
     } catch (error) {
