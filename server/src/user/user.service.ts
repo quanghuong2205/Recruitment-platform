@@ -1,15 +1,22 @@
 import { UserRepository } from './repositories/user.repo';
 import { Injectable } from '@nestjs/common';
 import { User } from './schemas/user.schema';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class UserService {
   constructor(private userRepo: UserRepository) {}
 
-  hashPassword() {}
+  async hashPassword(plain: string): Promise<string> {
+    const saltRounds = 10;
+    const salt = await bcrypt.genSalt(saltRounds);
+    const hash = await bcrypt.hash(plain, salt);
+    return hash;
+  }
 
-  validatePassword({ plain, hash }): boolean {
-    return true;
+  async validatePassword({ plain, hash }): Promise<boolean> {
+    const isMatch = await bcrypt.compare(plain, hash);
+    return isMatch;
   }
 
   async validateUser(email: string, password: string): Promise<User> {
