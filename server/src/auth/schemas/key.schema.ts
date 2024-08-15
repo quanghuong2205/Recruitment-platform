@@ -8,9 +8,6 @@ export class Key {
   @Prop({ isRequired: true })
   user_id: Types.ObjectId;
 
-  @Prop({ default: [] })
-  used_access_token: string[];
-
   @Prop({ required: true })
   refresh_token: string;
 }

@@ -8,13 +8,14 @@ import { UserService } from './../user/user.service';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { SignInDTO } from './dtos/signIn.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { KeyRepository } from './repositories/key.repo';
 import { User } from 'src/user/schemas/user.schema';
 import { ERRORCODES } from 'src/core/error/code';
 import { ERRORMESSAGE } from 'src/core/error/message';
 import ms from 'ms';
 import { SignUpDTO } from './dtos/signUp.dto';
+import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
 interface TokenOptions {
   secret: string;
@@ -106,19 +107,34 @@ export class AuthService {
     };
   }
 
-  async signOut(response: Response) {
-    /*  */
+  async signOut(request: Request, response: Response) {
+    console.log(request['user']);
+    const userId: string = request['user']._id;
+
+    /* Clear token */
+    await this.keyRepo.deleteOne({
+      user_id: createObjectId(userId),
+    });
+
+    /* Clear cookie */
+    response.clearCookie('refresh_token', {
+      httpOnly: true,
+      maxAge: +ms(this.refreshTokenOptions.expiresIn),
+    });
+
+    /* Return data */
+    return {};
   }
 
-  async signAccessToken(payload: any): Promise<string> {
+  signAccessToken(payload: any): string {
     try {
       /* Sign token */
-      const accessToken = await this.jwtService.sign(
+      const accessToken = this.jwtService.sign(
         payload,
         this.accessTokenOptions,
       );
       /* Verify token */
-      await this.verifyAccessToken(accessToken);
+      this.verifyAccessToken(accessToken);
       /* Return token */
       return accessToken;
     } catch (error) {
@@ -128,15 +144,15 @@ export class AuthService {
     }
   }
 
-  async signRefreshToken(payload: any): Promise<string> {
+  signRefreshToken(payload: any): string {
     try {
       /* Sign token */
-      const refreshToken = await this.jwtService.sign(
+      const refreshToken = this.jwtService.sign(
         payload,
         this.refreshTokenOptions,
       );
       /* Verify token */
-      await this.verifyRefreshToken(refreshToken);
+      this.verifyRefreshToken(refreshToken);
       /* Return token */
       return refreshToken;
     } catch (error) {
@@ -146,47 +162,46 @@ export class AuthService {
     }
   }
 
-  async signTokenPair(
-    payload: any,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  signTokenPair(payload: any): { accessToken: string; refreshToken: string } {
     return {
-      accessToken: await this.signAccessToken(payload),
-      refreshToken: await this.signRefreshToken(payload),
+      accessToken: this.signAccessToken(payload),
+      refreshToken: this.signRefreshToken(payload),
     };
   }
 
-  async verifyAccessToken(accessToken: string): Promise<unknown> {
+  verifyAccessToken(accessToken: string): unknown {
     try {
-      return await this.jwtService.verify(accessToken, this.accessTokenOptions);
+      return this.jwtService.verify(accessToken, this.accessTokenOptions);
     } catch (error) {
-      throw new InternalServerErrorException({
+      throw new UnauthorizedException({
         errorCode: ERRORCODES.AUTH_FAIL_VERIFY_ACCESS_TOKEN,
+        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
   }
 
-  async verifyRefreshToken(refreshToken: string): Promise<unknown> {
+  verifyRefreshToken(refreshToken: string): unknown {
     try {
-      return await this.jwtService.verify(
-        refreshToken,
-        this.refreshTokenOptions,
-      );
+      return this.jwtService.verify(refreshToken, this.refreshTokenOptions);
     } catch (error) {
-      throw new InternalServerErrorException({
+      throw new UnauthorizedException({
         errorCode: ERRORCODES.AUTH_FAIL_VERIFY_REFRESH_TOKEN,
+        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
   }
 
-  async refreshTokenPair(
-    refreshToken: string,
-  ): Promise<{ accessToken: string; refreshToken: string }> {
+  refreshTokenPair(refreshToken: string): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     try {
-      const payload = await this.jwtService.decode(refreshToken);
+      const payload = this.jwtService.decode(refreshToken);
       return this.signTokenPair(payload);
     } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_REFRESH_TOKEN,
+      throw new UnauthorizedException({
+        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_ACCESS_TOKEN,
+        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
   }

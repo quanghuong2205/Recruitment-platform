@@ -1,7 +1,7 @@
 import { AuthService } from './auth.service';
-import { Body, Controller, Post, Res } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res } from '@nestjs/common';
 import { SignInDTO } from './dtos/signIn.dto';
-import { Response } from 'express';
+import { Response, Request } from 'express';
 import { Public } from 'src/decorators/public.deco';
 import { SignUpDTO } from './dtos/signUp.dto';
 
@@ -22,5 +22,13 @@ export class AuthController {
   @Post('sign-up')
   async signUp(@Body() authInfor: SignUpDTO) {
     return await this.authService.signUp(authInfor);
+  }
+
+  @Post('sign-out')
+  async signOut(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return await this.authService.signOut(request, response);
   }
 }

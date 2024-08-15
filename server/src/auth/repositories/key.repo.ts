@@ -2,21 +2,11 @@ import { BaseRepository } from 'src/core/base/repository.base';
 import { Key } from '../schemas/key.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
+import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
 export class KeyRepository extends BaseRepository<Key> {
   constructor(@InjectModel(Key.name) private keyModel: Model<Key>) {
     super(keyModel);
-  }
-
-  async updateUsedTokens(
-    accessToken: string,
-    userId: string,
-  ): Promise<unknown> {
-    return await this.repo.findOneAndUpdate(
-      { _id: new Types.ObjectId(userId) },
-      { $push: { used_access_token: accessToken } },
-      { new: true, upsert: true },
-    );
   }
 
   async updateRefreshToken(
@@ -26,6 +16,7 @@ export class KeyRepository extends BaseRepository<Key> {
     return await this.findOneAndUpdate(
       { _id: new Types.ObjectId(userId) },
       {
+        user_id: createObjectId(userId),
         refresh_token: refreshToken,
       },
       { new: true, upsert: true },

@@ -40,6 +40,7 @@ export class AuthGuard implements CanActivate {
 
     /* Attach payload */
     request['user'] = payload;
+    console.log(request['user']);
 
     /* Pass guard */
     return true;
