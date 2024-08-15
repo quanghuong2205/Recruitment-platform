@@ -1,4 +1,7 @@
-export const select = (selectedProps: string[], unSelectedProps: string[]) => {
+export const select = (
+  selectedProps: string[] = [],
+  unSelectedProps: string[] = [],
+) => {
   return {
     ...selectedProps.reduce((prev, cur) => {
       return { ...prev, [cur]: 1 };

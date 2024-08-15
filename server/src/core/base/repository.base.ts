@@ -36,7 +36,7 @@ export class BaseRepository<T> {
     unSelectedProps?: string[],
   ): Promise<T> {
     try {
-      return this.repo
+      return await this.repo
         .findOne(filter)
         .select(select(selectedProps, unSelectedProps));
     } catch (error) {
@@ -50,6 +50,7 @@ export class BaseRepository<T> {
     try {
       return await this.repo.create(props);
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_CREATE,
       });

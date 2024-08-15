@@ -1,11 +1,9 @@
-import { InternalServerErrorException } from '@nestjs/common';
 import { BaseRepository } from './repository.base';
 import aqp from 'api-query-params';
-import { ERRORCODES } from '../error/code';
 import { select } from 'src/utils/mongoose/select.util';
-import { FilterQuery } from 'mongoose';
+import { FilterQuery, Types } from 'mongoose';
 
-export class BaseCRUDService<T, CDTO, UDTO> {
+export class BaseCRUDService<T> {
   private repository: BaseRepository<T>;
   private name: string;
 
@@ -19,18 +17,11 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     selectedProps?: string[],
     unSelectedProps?: string[],
   ) {
-    try {
-      const data = await this.repository.findOne(
-        filter,
-        selectedProps,
-        unSelectedProps,
-      );
-      return data;
-    } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
-      });
-    }
+    return await this.repository.findOne(
+      filter,
+      selectedProps,
+      unSelectedProps,
+    );
   }
 
   async findMany(
@@ -57,45 +48,25 @@ export class BaseCRUDService<T, CDTO, UDTO> {
       .select(select(selectedProps, unSelectedProps));
   }
 
-  async create(payload: CDTO): Promise<any> {
-    try {
-      const data = await this.repository.getRepo().create(payload);
-      return data;
-    } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.DOCUMENT_FAIL_CREATE,
-      });
-    }
+  async create(payload: Partial<T> | any): Promise<T> {
+    return await this.repository.create({
+      _id: new Types.ObjectId(),
+      ...payload,
+    });
   }
 
   async updateOne(
-    filter: Record<string, any>,
-    updatedProps: UDTO,
+    filter: FilterQuery<T>,
+    updatedProps: Partial<T>,
     options?: Record<string, any>,
   ): Promise<any> {
-    try {
-      const data = await this.repository
-        .getRepo()
-        .updateOne(filter, updatedProps, options);
-      return data;
-    } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,
-      });
-    }
+    return await this.repository.updateOne(filter, updatedProps, options);
   }
 
   async deleteOne(
-    filter: Record<string, any>,
+    filter: FilterQuery<T>,
     options?: Record<string, any>,
   ): Promise<any> {
-    try {
-      const data = await this.repository.deleteOne(filter, options);
-      return data;
-    } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.DOCUMENT_FAIL_DELETE,
-      });
-    }
+    return await this.repository.deleteOne(filter, options);
   }
 }

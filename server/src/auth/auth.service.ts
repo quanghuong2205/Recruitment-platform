@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   Injectable,
   InternalServerErrorException,
   UnauthorizedException,
@@ -13,6 +14,7 @@ import { User } from 'src/user/schemas/user.schema';
 import { ERRORCODES } from 'src/core/error/code';
 import { ERRORMESSAGE } from 'src/core/error/message';
 import ms from 'ms';
+import { SignUpDTO } from './dtos/signUp.dto';
 
 interface TokenOptions {
   secret: string;
@@ -75,6 +77,37 @@ export class AuthService {
       user,
       access_token: accessToken,
     };
+  }
+
+  async signUp(authInfor: SignUpDTO) {
+    const { email, password } = authInfor;
+    /* Valdate email */
+    const isExisted = await this.userService.validateEmail(email);
+    if (isExisted) {
+      throw new BadRequestException({
+        message: ERRORMESSAGE.AUTH_USER_EXIST,
+        errorCode: ERRORCODES.AUTH_USER_EXIST,
+      });
+    }
+
+    /* Hash password */
+    const hash = await this.userService.hashPassword(password);
+
+    /* Create account */
+    const newUser = await this.userService.create({
+      ...authInfor,
+      role: 'user',
+      password: hash,
+    });
+
+    /* Return data */
+    return {
+      user: newUser,
+    };
+  }
+
+  async signOut(response: Response) {
+    /*  */
   }
 
   async signAccessToken(payload: any): Promise<string> {

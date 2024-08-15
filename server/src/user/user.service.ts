@@ -2,10 +2,13 @@ import { UserRepository } from './repositories/user.repo';
 import { Injectable } from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import bcrypt from 'bcrypt';
+import { BaseCRUDService } from 'src/core/base/crudservice.base';
 
 @Injectable()
-export class UserService {
-  constructor(private userRepo: UserRepository) {}
+export class UserService extends BaseCRUDService<User> {
+  constructor(private userRepo: UserRepository) {
+    super(userRepo, 'user');
+  }
 
   async hashPassword(plain: string): Promise<string> {
     const saltRounds = 10;
@@ -20,11 +23,16 @@ export class UserService {
   }
 
   async validateUser(email: string, password: string): Promise<User> {
-    const user = await this.userRepo.findOne({ email });
+    const user = await this.userRepo.findUserByEmail(email);
     if (!user) return null;
 
     const isMatched = await this.validatePassword(password, user.password);
 
     return isMatched ? user : null;
+  }
+
+  async validateEmail(email: string): Promise<boolean> {
+    const user = await this.userRepo.findUserByEmail(email);
+    return !!user;
   }
 }
