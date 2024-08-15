@@ -3,6 +3,7 @@ import { BaseRepository } from './repository.base';
 import aqp from 'api-query-params';
 import { ERRORCODES } from '../error/code';
 import { select } from 'src/utils/mongoose/select.util';
+import { FilterQuery } from 'mongoose';
 
 export class BaseCRUDService<T, CDTO, UDTO> {
   private repository: BaseRepository<T>;
@@ -14,15 +15,16 @@ export class BaseCRUDService<T, CDTO, UDTO> {
   }
 
   async findOne(
-    filter: Record<string, any>,
+    filter: FilterQuery<T>,
     selectedProps?: string[],
     unSelectedProps?: string[],
   ) {
     try {
-      const data = await this.repository
-        .getRepo()
-        .findOne(filter)
-        .select(select(selectedProps, unSelectedProps));
+      const data = await this.repository.findOne(
+        filter,
+        selectedProps,
+        unSelectedProps,
+      );
       return data;
     } catch (error) {
       throw new InternalServerErrorException({
@@ -47,7 +49,7 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     /* Sort condition */
 
     /* Query documents */
-    return this.repository
+    return await this.repository
       .getRepo()
       .find(parsedQuery?.filter ?? {})
       .limit(limit)
@@ -88,7 +90,7 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     options?: Record<string, any>,
   ): Promise<any> {
     try {
-      const data = await this.repository.getRepo().deleteOne(filter, options);
+      const data = await this.repository.deleteOne(filter, options);
       return data;
     } catch (error) {
       throw new InternalServerErrorException({

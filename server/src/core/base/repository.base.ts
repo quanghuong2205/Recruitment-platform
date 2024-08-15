@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { Model } from 'mongoose';
+import { FilterQuery, Model, QueryOptions, UpdateQuery } from 'mongoose';
 import { ERRORCODES } from '../error/code';
 import { select } from 'src/utils/mongoose/select.util';
 
@@ -15,7 +15,7 @@ export class BaseRepository<T> {
   }
 
   async findMany(
-    filter: Record<string, any>,
+    filter: FilterQuery<T>,
     selectedProps?: string[],
     unSelectedProps?: string[],
   ): Promise<T[]> {
@@ -31,7 +31,7 @@ export class BaseRepository<T> {
   }
 
   async findOne(
-    filter: Record<string, any>,
+    filter: FilterQuery<T>,
     selectedProps?: string[],
     unSelectedProps?: string[],
   ): Promise<T> {
@@ -56,8 +56,8 @@ export class BaseRepository<T> {
     }
   }
 
-  async updatedOne(
-    filter: Record<string, any>,
+  async updateOne(
+    filter: FilterQuery<T>,
     updatedProps: Partial<T>,
     options?: Record<string, any>,
   ): Promise<unknown> {
@@ -71,7 +71,7 @@ export class BaseRepository<T> {
   }
 
   async deleteOne(
-    filter: Record<string, any>,
+    filter: FilterQuery<T>,
     options?: Record<string, any>,
   ): Promise<unknown> {
     try {
@@ -84,9 +84,9 @@ export class BaseRepository<T> {
   }
 
   async findOneAndUpdate(
-    filter: Record<string, any>,
-    updatedProps: Partial<T>,
-    options?: Record<string, any>,
+    filter: FilterQuery<T>,
+    updatedProps: UpdateQuery<T>,
+    options?: QueryOptions,
   ): Promise<unknown> {
     try {
       return await this.repo.findOneAndUpdate(filter, updatedProps, options);
