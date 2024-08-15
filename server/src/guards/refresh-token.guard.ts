@@ -5,25 +5,20 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { Request } from 'express';
-import { AuthService } from '../auth/auth.service';
-import { Reflector } from '@nestjs/core';
-import { IS_PUBLIC_KEY } from 'src/decorators/public.deco';
-import { UserService } from 'src/user/user.service';
-import { createObjectId } from 'src/utils/mongoose/createObjectId';
+import { AuthService } from 'src/auth/auth.service';
 import { ERRORCODES } from 'src/core/error/code';
 import { ERRORMESSAGE } from 'src/core/error/message';
+import { UserService } from 'src/user/user.service';
+import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
 @Injectable()
-export class AuthGuard implements CanActivate {
+export class RefreshTokenGuard implements CanActivate {
   constructor(
     private authService: AuthService,
     private userService: UserService,
-    private reflector: Reflector,
   ) {}
-  async canActivate(context: ExecutionContext): Promise<boolean> {
-    /* Check if the guard is enable  */
-    if (this.isPassed(context)) return true;
 
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     /* Switch http context */
     const httpContext = context.switchToHttp();
     const request: Request = httpContext.getRequest();
@@ -32,13 +27,13 @@ export class AuthGuard implements CanActivate {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
       throw new UnauthorizedException({
-        errorCode: ERRORCODES.AUTH_MISS_ACCESS_TOKEN,
+        errorCode: ERRORCODES.AUTH_MISS_REFRESH_TOKEN,
         messsage: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
 
     /* Verify token */
-    const payload = this.authService.verifyAccessToken(token);
+    const payload = this.authService.verifyRefreshToken(token);
 
     /* Verify user */
     const isValidUser = await this.verifyUser(payload['_id']);
@@ -46,25 +41,12 @@ export class AuthGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
-    /* Attach payload */
-    request['user'] = payload;
-
-    /* Next guard */
     return true;
   }
 
   private extractTokenFromHeader(request: Request): string | undefined {
     const [type, token] = request.headers.authorization?.split(' ') ?? [];
     return type === 'Bearer' ? token : undefined;
-  }
-
-  private isPassed(context: ExecutionContext) {
-    const isPublic = this.reflector.getAllAndOverride<boolean>(IS_PUBLIC_KEY, [
-      context.getHandler(),
-      context.getClass(),
-    ]);
-
-    return isPublic;
   }
 
   private async verifyUser(userId: string): Promise<boolean> {

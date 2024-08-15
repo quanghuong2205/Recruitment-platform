@@ -58,7 +58,7 @@ export class AuthService {
     const userId = user._id.toString();
 
     /* Sign token */
-    const { accessToken, refreshToken } = await this.signTokenPair({
+    const { accessToken, refreshToken } = this.signTokenPair({
       _id: userId,
       email,
       name: user.name,
@@ -195,14 +195,7 @@ export class AuthService {
     accessToken: string;
     refreshToken: string;
   } {
-    try {
-      const payload = this.jwtService.decode(refreshToken);
-      return this.signTokenPair(payload);
-    } catch (error) {
-      throw new UnauthorizedException({
-        errorCode: ERRORCODES.AUTH_FAIL_VERIFY_ACCESS_TOKEN,
-        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
-      });
-    }
+    const payload = this.verifyRefreshToken(refreshToken);
+    return this.signTokenPair(payload);
   }
 }

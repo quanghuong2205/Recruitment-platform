@@ -30,8 +30,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       };
     } else {
       errorResponse = {
-        errorCode: ERRORCODES.UNKNOWN,
         message: ERRORMESSAGE.UNKNOWN,
+        errorCode: ERRORCODES.UNKNOWN,
         statusCode: status,
         ...errorResponse,
       };
