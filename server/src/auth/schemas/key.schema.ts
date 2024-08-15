@@ -3,7 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type KeyDocument = HydratedDocument<Key>;
 
-@Schema()
+@Schema({ timestamps: true })
 export class Key {
   @Prop({ isRequired: true })
   user_id: Types.ObjectId;

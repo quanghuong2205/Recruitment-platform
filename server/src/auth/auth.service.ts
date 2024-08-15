@@ -62,7 +62,7 @@ export class AuthService {
     });
 
     /* Save token */
-    await this.keyRepo.updatedRefreshToken(refreshToken, userId);
+    await this.keyRepo.updateRefreshToken(refreshToken, userId);
 
     /* Sign cookies */
     response.cookie('refresh_token', refreshToken, {

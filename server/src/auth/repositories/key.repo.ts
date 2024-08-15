@@ -19,7 +19,7 @@ export class KeyRepository extends BaseRepository<Key> {
     );
   }
 
-  async updatedRefreshToken(
+  async updateRefreshToken(
     refreshToken: string,
     userId: string,
   ): Promise<unknown> {

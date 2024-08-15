@@ -14,6 +14,7 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
     @Body() authInfor: SignInDTO,
   ) {
+    console.log(authInfor);
     return await this.authService.signIn(authInfor, response);
   }
 }
