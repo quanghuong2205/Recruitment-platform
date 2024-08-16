@@ -97,7 +97,7 @@ export class AuthService {
       ...authInfor,
       role: 'user',
       password: hash,
-    });
+    } as any);
 
     /* Return data */
     return {

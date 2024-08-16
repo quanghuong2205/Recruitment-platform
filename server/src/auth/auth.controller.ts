@@ -36,7 +36,7 @@ export class AuthController {
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Post('infor')
-  async getUserInfor(@Req() request: Request) {
+  async getAuthInfor(@Req() request: Request) {
     return request['user'];
   }
 

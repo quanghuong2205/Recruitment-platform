@@ -2,7 +2,6 @@ import { createObjectId } from 'src/utils/mongoose/createObjectId';
 import { CreateUserDTO } from './dtos/create.dto';
 import { UserService } from './user.service';
 import {
-  BadRequestException,
   Body,
   Controller,
   Delete,
@@ -12,11 +11,9 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { UserInfor } from 'src/decorators/userinfor.deco';
-import { UpdateUserDTO } from './dtos/update';
+import { AuthInfor } from 'src/decorators/userinfor.deco';
+import { UpdateUserDTO } from './dtos/update.dto';
 import { ITokenPayload } from 'src/auth/token-payload.interface';
-import { ERRORMESSAGE } from 'src/core/error/message';
-import { ERRORCODES } from 'src/core/error/code';
 
 @Controller('user')
 export class UserController {
@@ -61,39 +58,19 @@ export class UserController {
   @Post('/')
   async createUser(
     @Body() userInfor: CreateUserDTO,
-    @UserInfor() user: ITokenPayload,
+    @AuthInfor() auth: ITokenPayload,
   ) {
-    const { email, password } = userInfor;
-    /* Valdate email */
-    const isExisted = await this.userService.validateEmail(email);
-    if (isExisted) {
-      throw new BadRequestException({
-        message: ERRORMESSAGE.AUTH_USER_EXIST,
-        errorCode: ERRORCODES.AUTH_USER_EXIST,
-      });
-    }
+    return 1;
 
-    /* Hash password */
-    const hash = await this.userService.hashPassword(password);
-
-    /* Create user */
+    /* Get auth */
     const createdBy = {
-      _id: user._id,
-      email: user.email,
+      _id: auth._id,
+      email: auth.email,
     };
-    const newUser = await this.userService.create({
-      ...userInfor,
-      password: hash,
-      role: 'user',
-      createdBy,
-    });
-
-    /* Remove some fields from returned object */
-    delete newUser['password'];
 
     /* Return data */
     return {
-      user: newUser,
+      user: await this.userService.createUser(userInfor, createdBy),
     };
   }
 
@@ -101,37 +78,19 @@ export class UserController {
   async updateUser(
     @Param('id') userId: string,
     @Body() userInfor: UpdateUserDTO,
-    @UserInfor() user: ITokenPayload,
+    @AuthInfor() auth: ITokenPayload,
   ) {
-    /* Valdate email */
-    if (userInfor?.email) {
-      const isExisted = await this.userService.validateEmail(userInfor.email);
-      if (isExisted) {
-        throw new BadRequestException({
-          message: ERRORMESSAGE.AUTH_USER_EXIST,
-          errorCode: ERRORCODES.AUTH_USER_EXIST,
-        });
-      }
-      userInfor.isVerifiedEmail = false;
-    }
-
-    /* Hash password */
-    if (userInfor?.password) {
-      userInfor.password = await this.userService.hashPassword(
-        userInfor.password,
-      );
-    }
+    /* Get auth */
+    const updatedBy = {
+      _id: auth._id,
+      email: auth.email,
+    };
 
     /* Update user */
-    const updatedBy = {
-      _id: user._id,
-      email: user.email,
-    };
-    const updatedUser = await this.userService.updateOne(
-      { _id: createObjectId(userId) },
-      { ...userInfor, updatedBy },
-      [],
-      ['password', '__v'],
+    const updatedUser = await this.userService.updateUser(
+      userId,
+      userInfor,
+      updatedBy,
     );
 
     /* Return data */
@@ -143,13 +102,15 @@ export class UserController {
   @Delete('/:id')
   async deleteUser(
     @Param('id') userId: string,
-    @UserInfor() user: ITokenPayload,
+    @AuthInfor() user: ITokenPayload,
   ) {
-    /* Delete user */
+    /* Get auth */
     const deletedBy = {
       _id: user._id,
       email: user.email,
     };
+
+    /* Delete user */
     const deletedUser = await this.userService.softDelete(
       { _id: createObjectId(userId) },
       { deletedBy },
