@@ -1,5 +1,5 @@
 import { InternalServerErrorException } from '@nestjs/common';
-import { FilterQuery, Model, QueryOptions, UpdateQuery } from 'mongoose';
+import { FilterQuery, Model } from 'mongoose';
 import { ERRORCODES } from '../error/code';
 import { select } from 'src/utils/mongoose/select.util';
 
@@ -22,7 +22,8 @@ export class BaseRepository<T> {
     try {
       return this.repo
         .find(filter)
-        .select(select(selectedProps, unSelectedProps));
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
@@ -38,7 +39,8 @@ export class BaseRepository<T> {
     try {
       return await this.repo
         .findOne(filter)
-        .select(select(selectedProps, unSelectedProps));
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
@@ -46,11 +48,10 @@ export class BaseRepository<T> {
     }
   }
 
-  async create(props: Partial<T>): Promise<T> {
+  async create(props: Partial<T>): Promise<T | any> {
     try {
-      return await this.repo.create(props);
+      return (await this.repo.create(props))['_doc'];
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_CREATE,
       });
@@ -60,10 +61,15 @@ export class BaseRepository<T> {
   async updateOne(
     filter: FilterQuery<T>,
     updatedProps: Partial<T>,
-    options?: Record<string, any>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+    options: Record<string, any> = { new: true },
   ): Promise<unknown> {
     try {
-      return await this.repo.updateOne(filter, updatedProps, options);
+      return await this.repo
+        .findOneAndUpdate(filter, updatedProps, options)
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,
@@ -73,24 +79,15 @@ export class BaseRepository<T> {
 
   async deleteOne(
     filter: FilterQuery<T>,
-    options?: Record<string, any>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+    options: Record<string, any> = { new: true },
   ): Promise<unknown> {
     try {
-      return await this.repo.deleteOne(filter, options);
-    } catch (error) {
-      throw new InternalServerErrorException({
-        errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,
-      });
-    }
-  }
-
-  async findOneAndUpdate(
-    filter: FilterQuery<T>,
-    updatedProps: UpdateQuery<T>,
-    options?: QueryOptions,
-  ): Promise<unknown> {
-    try {
-      return await this.repo.findOneAndUpdate(filter, updatedProps, options);
+      return await this.repo
+        .findOneAndDelete(filter, options)
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
     } catch (error) {
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,

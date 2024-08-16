@@ -13,12 +13,14 @@ export class KeyRepository extends BaseRepository<Key> {
     refreshToken: string,
     userId: string,
   ): Promise<unknown> {
-    return await this.findOneAndUpdate(
+    return await this.updateOne(
       { _id: new Types.ObjectId(userId) },
       {
         user_id: createObjectId(userId),
         refresh_token: refreshToken,
       },
+      [],
+      [],
       { new: true, upsert: true },
     );
   }

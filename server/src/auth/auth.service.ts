@@ -16,6 +16,7 @@ import { ERRORMESSAGE } from 'src/core/error/message';
 import ms from 'ms';
 import { SignUpDTO } from './dtos/signUp.dto';
 import { createObjectId } from 'src/utils/mongoose/createObjectId';
+import { ITokenPayload } from './token-payload.interface';
 
 interface TokenOptions {
   secret: string;
@@ -44,7 +45,7 @@ export class AuthService {
     };
   }
 
-  async signIn(authInfor: SignInDTO, response: Response) {
+  async signIn(authInfor: SignInDTO, response: Response): Promise<unknown> {
     const { email, password } = authInfor;
     /* Valdate user existance */
     const user: User = await this.userService.validateUser(email, password);
@@ -67,11 +68,8 @@ export class AuthService {
     /* Save token */
     await this.keyRepo.updateRefreshToken(refreshToken, userId);
 
-    /* Sign cookies */
-    response.cookie('refresh_token', refreshToken, {
-      httpOnly: true,
-      maxAge: +ms(this.refreshTokenOptions.expiresIn),
-    });
+    /* Set cookie */
+    this.setRefreshTokenCookie(response, refreshToken);
 
     /* Return data */
     return {
@@ -80,7 +78,7 @@ export class AuthService {
     };
   }
 
-  async signUp(authInfor: SignUpDTO) {
+  async signUp(authInfor: SignUpDTO): Promise<unknown> {
     const { email, password } = authInfor;
     /* Valdate email */
     const isExisted = await this.userService.validateEmail(email);
@@ -107,7 +105,7 @@ export class AuthService {
     };
   }
 
-  async signOut(request: Request, response: Response) {
+  async signOut(request: Request, response: Response): Promise<unknown> {
     console.log(request['user']);
     const userId: string = request['user']._id;
 
@@ -126,7 +124,29 @@ export class AuthService {
     return {};
   }
 
-  signAccessToken(payload: any): string {
+  async refreshTokenPair(
+    request: Request,
+    response: Response,
+  ): Promise<unknown> {
+    /* Extract userId */
+    const userId = request['user']._id;
+
+    /* Sign new token pair */
+    const { accessToken, refreshToken } = this.signTokenPair(request['user']);
+
+    /* Save token */
+    await this.keyRepo.updateRefreshToken(refreshToken, userId);
+
+    /* Set cookie */
+    this.setRefreshTokenCookie(response, refreshToken);
+
+    /* Return data */
+    return {
+      access_token: accessToken,
+    };
+  }
+
+  signAccessToken(payload: ITokenPayload): string {
     try {
       /* Sign token */
       const accessToken = this.jwtService.sign(
@@ -138,13 +158,14 @@ export class AuthService {
       /* Return token */
       return accessToken;
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.AUTH_FAIL_SIGN_ACCESS_TOKEN,
       });
     }
   }
 
-  signRefreshToken(payload: any): string {
+  signRefreshToken(payload: ITokenPayload): string {
     try {
       /* Sign token */
       const refreshToken = this.jwtService.sign(
@@ -162,14 +183,17 @@ export class AuthService {
     }
   }
 
-  signTokenPair(payload: any): { accessToken: string; refreshToken: string } {
+  signTokenPair(payload: ITokenPayload): {
+    accessToken: string;
+    refreshToken: string;
+  } {
     return {
       accessToken: this.signAccessToken(payload),
       refreshToken: this.signRefreshToken(payload),
     };
   }
 
-  verifyAccessToken(accessToken: string): unknown {
+  verifyAccessToken(accessToken: string): ITokenPayload {
     try {
       return this.jwtService.verify(accessToken, this.accessTokenOptions);
     } catch (error) {
@@ -180,7 +204,7 @@ export class AuthService {
     }
   }
 
-  verifyRefreshToken(refreshToken: string): unknown {
+  verifyRefreshToken(refreshToken: string): ITokenPayload {
     try {
       return this.jwtService.verify(refreshToken, this.refreshTokenOptions);
     } catch (error) {
@@ -191,11 +215,10 @@ export class AuthService {
     }
   }
 
-  refreshTokenPair(refreshToken: string): {
-    accessToken: string;
-    refreshToken: string;
-  } {
-    const payload = this.verifyRefreshToken(refreshToken);
-    return this.signTokenPair(payload);
+  setRefreshTokenCookie(response: Response, refreshToken: string) {
+    response.cookie('refresh_token', refreshToken, {
+      httpOnly: true,
+      maxAge: +ms(this.refreshTokenOptions.expiresIn),
+    });
   }
 }

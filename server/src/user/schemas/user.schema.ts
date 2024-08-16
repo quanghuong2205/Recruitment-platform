@@ -36,6 +36,12 @@ export class User {
   @Prop()
   avatar: string;
 
+  @Prop({ default: false })
+  isDeleted: boolean;
+
+  @Prop({ default: false })
+  isVerifiedEmail: boolean;
+
   @Prop({ type: Object })
   createdBy: {
     _id: Types.ObjectId;

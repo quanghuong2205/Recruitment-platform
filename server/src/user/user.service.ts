@@ -3,9 +3,15 @@ import { Injectable } from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import bcrypt from 'bcrypt';
 import { BaseCRUDService } from 'src/core/base/crudservice.base';
+import { CreateUserDTO } from './dtos/create.dto';
+import { UpdateUserDTO } from './dtos/update';
 
 @Injectable()
-export class UserService extends BaseCRUDService<User> {
+export class UserService extends BaseCRUDService<
+  User,
+  CreateUserDTO,
+  UpdateUserDTO
+> {
   constructor(private userRepo: UserRepository) {
     super(userRepo, 'user');
   }

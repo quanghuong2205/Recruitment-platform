@@ -1,9 +1,10 @@
 import { AuthService } from './auth.service';
-import { Body, Controller, Post, Req, Res } from '@nestjs/common';
+import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SignInDTO } from './dtos/signIn.dto';
 import { Response, Request } from 'express';
 import { Public } from 'src/decorators/public.deco';
 import { SignUpDTO } from './dtos/signUp.dto';
+import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
@@ -30,5 +31,22 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     return await this.authService.signOut(request, response);
+  }
+
+  @Public()
+  @UseGuards(RefreshTokenGuard)
+  @Post('infor')
+  async getUserInfor(@Req() request: Request) {
+    return request['user'];
+  }
+
+  @Public()
+  @UseGuards(RefreshTokenGuard)
+  @Post('refresh-token')
+  async refreshTokenPair(
+    @Req() request: Request,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    return await this.authService.refreshTokenPair(request, response);
   }
 }

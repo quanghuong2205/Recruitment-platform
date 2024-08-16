@@ -33,7 +33,7 @@ export class AuthGuard implements CanActivate {
     if (!token) {
       throw new UnauthorizedException({
         errorCode: ERRORCODES.AUTH_MISS_ACCESS_TOKEN,
-        messsage: ERRORMESSAGE.AUTH_UNAUTHORIZED,
+        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
 

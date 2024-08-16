@@ -2,13 +2,15 @@ export const select = (
   selectedProps: string[] = [],
   unSelectedProps: string[] = [],
 ) => {
-  return {
-    ...selectedProps.reduce((prev, cur) => {
-      return { ...prev, [cur]: 1 };
-    }, {}),
+  if (selectedProps.length) {
+    return selectedProps.join(' ');
+  }
 
-    ...unSelectedProps.reduce((prev, cur) => {
-      return { ...prev, [cur]: -1 };
-    }, {}),
-  };
+  if (unSelectedProps.length) {
+    return unSelectedProps
+      .reduce((prev, cur) => {
+        return [...prev, `-${cur}`];
+      }, [])
+      .join(' ');
+  }
 };

@@ -24,11 +24,11 @@ export class RefreshTokenGuard implements CanActivate {
     const request: Request = httpContext.getRequest();
 
     /* Extract access token from header */
-    const token = this.extractTokenFromHeader(request);
+    const token = this.extractTokenFromCookie(request);
     if (!token) {
       throw new UnauthorizedException({
         errorCode: ERRORCODES.AUTH_MISS_REFRESH_TOKEN,
-        messsage: ERRORMESSAGE.AUTH_UNAUTHORIZED,
+        message: ERRORMESSAGE.AUTH_UNAUTHORIZED,
       });
     }
 
@@ -41,12 +41,16 @@ export class RefreshTokenGuard implements CanActivate {
       throw new UnauthorizedException();
     }
 
+    /* Attach payload */
+    delete payload['iat'];
+    delete payload['exp'];
+    request['user'] = payload;
+
     return true;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
-    const [type, token] = request.headers.authorization?.split(' ') ?? [];
-    return type === 'Bearer' ? token : undefined;
+  private extractTokenFromCookie(request: Request): string | undefined {
+    return request.cookies['refresh_token'];
   }
 
   private async verifyUser(userId: string): Promise<boolean> {
