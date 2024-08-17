@@ -5,6 +5,7 @@ import { CompanyService } from './company.service';
 import { CreateCompnayDTO } from './dtos/create.dto';
 import { UpdateCompanyDTO } from './dtos/update.dto';
 import { AuthInfor } from 'src/decorators/userinfor.deco';
+import { ValidateEnumPipe } from 'src/pipes/validate-enum.pipe';
 
 @Controller('company')
 export class CompanyController {
@@ -33,9 +34,11 @@ export class CompanyController {
   async updateRequestHistory(
     @Body() companyInfor: UpdateCompanyDTO,
     @Param('companyId') companyId: string,
-    @Param('status') status: string,
+    @Param('status', new ValidateEnumPipe<string>(['rejected', 'approved']))
+    status: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
+    return status;
     const updatedBy = {
       _id: auth._id,
       email: auth.email,
