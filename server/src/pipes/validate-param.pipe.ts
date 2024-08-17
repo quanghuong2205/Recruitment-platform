@@ -7,7 +7,7 @@ import {
 import { ERRORCODES } from 'src/core/error/code';
 
 @Injectable()
-export class ValidateExistancePipe<T> implements PipeTransform {
+export class ExistanceValidationPipe<T> implements PipeTransform {
   transform(value: T, metadata: ArgumentMetadata) {
     if (!value || value === '') {
       const { type, data } = metadata;

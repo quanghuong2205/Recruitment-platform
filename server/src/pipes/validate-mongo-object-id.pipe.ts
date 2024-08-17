@@ -8,7 +8,7 @@ import { Types } from 'mongoose';
 import { ERRORCODES } from 'src/core/error/code';
 
 @Injectable()
-export class ValidateMongoObjectIdPipe implements PipeTransform {
+export class MongoObjectIdValidationPipe implements PipeTransform {
   transform(value: string, metadata: ArgumentMetadata) {
     if (!Types.ObjectId.isValid(value)) {
       const { data } = metadata;

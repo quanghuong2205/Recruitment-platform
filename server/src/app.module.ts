@@ -8,6 +8,7 @@ import { AuthGuard } from './guards/auth.guard';
 import { HttpExceptionFilter } from './exception-filters/http-exception-filter';
 import { FormatResponseInterceptor } from './interceptors/format-response.interceptor';
 import { CompanyModule } from './company/company.module';
+import { UploadModule } from './upload/upload.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { CompanyModule } from './company/company.module';
     AuthModule,
     UserModule,
     CompanyModule,
+    UploadModule,
   ],
 
   providers: [

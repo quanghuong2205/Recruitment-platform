@@ -7,7 +7,7 @@ import {
 import { ERRORCODES } from 'src/core/error/code';
 
 @Injectable()
-export class ValidateEnumPipe<T> implements PipeTransform {
+export class EnumValidationPipe<T> implements PipeTransform {
   constructor(private enumValues: T[]) {}
   transform(value: T, metadata: ArgumentMetadata) {
     if (!this.enumValues.includes(value)) {
