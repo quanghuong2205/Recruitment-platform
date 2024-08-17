@@ -7,13 +7,12 @@ import {
 import { ERRORCODES } from 'src/core/error/code';
 
 @Injectable()
-export class ValidateEnumPipe<T> implements PipeTransform {
-  constructor(private enumValues: T[]) {}
+export class ValidateExistancePipe<T> implements PipeTransform {
   transform(value: T, metadata: ArgumentMetadata) {
-    if (!this.enumValues.includes(value)) {
+    if (!value || value === '') {
       const { type, data } = metadata;
       throw new BadRequestException({
-        message: `The value of ${data} of ${type} is invalid`,
+        message: `${data} of ${type} is missing`,
         errorCode: this.getErrorCode(type),
       });
     }
@@ -23,14 +22,11 @@ export class ValidateEnumPipe<T> implements PipeTransform {
 
   private getErrorCode(type: string) {
     switch (type) {
-      case 'param':
-        return ERRORCODES.REQUEST_INVALID_PARAM_VALUE;
-
       case 'query':
-        return ERRORCODES.REQUEST_INVALID_QUERY_VALUE;
+        return ERRORCODES.REQUEST_MISS_QUERY;
 
       default: {
-        return ERRORCODES.INVALID_VALUE;
+        return ERRORCODES.MISS_VALUE;
       }
     }
   }

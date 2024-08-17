@@ -6,6 +6,7 @@ import { CreateCompnayDTO } from './dtos/create.dto';
 import { UpdateCompanyDTO } from './dtos/update.dto';
 import { AuthInfor } from 'src/decorators/userinfor.deco';
 import { ValidateEnumPipe } from 'src/pipes/validate-enum.pipe';
+import { ValidateExistancePipe } from 'src/pipes/validate-param.pipe';
 
 @Controller('company')
 export class CompanyController {
@@ -38,7 +39,7 @@ export class CompanyController {
     status: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
-    return status;
+    return companyId;
     const updatedBy = {
       _id: auth._id,
       email: auth.email,
