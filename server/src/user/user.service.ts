@@ -16,7 +16,7 @@ export class UserService extends BaseCRUDService<
   UpdateUserDTO
 > {
   constructor(private userRepo: UserRepository) {
-    super(userRepo, 'user');
+    super(userRepo, 'user services');
   }
 
   async createUser(userInfor: CreateUserDTO, createdBy: Record<string, any>) {
@@ -87,6 +87,10 @@ export class UserService extends BaseCRUDService<
     const salt = await bcrypt.genSalt(saltRounds);
     const hash = await bcrypt.hash(plain, salt);
     return hash;
+  }
+
+  async updateUserCompany(userId: string, companyInfor: Record<string, any>) {
+    return await this.userRepo.updateOneById(userId, companyInfor);
   }
 
   async validatePassword(plain: string, hash: string): Promise<boolean> {

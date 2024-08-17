@@ -60,8 +60,6 @@ export class UserController {
     @Body() userInfor: CreateUserDTO,
     @AuthInfor() auth: ITokenPayload,
   ) {
-    return 1;
-
     /* Get auth */
     const createdBy = {
       _id: auth._id,

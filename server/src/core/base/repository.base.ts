@@ -2,6 +2,7 @@ import { InternalServerErrorException } from '@nestjs/common';
 import { FilterQuery, Model } from 'mongoose';
 import { ERRORCODES } from '../error/code';
 import { select } from 'src/utils/mongoose/select.util';
+import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
 export class BaseRepository<T> {
   protected repo: Model<T>;
@@ -64,10 +65,29 @@ export class BaseRepository<T> {
     selectedProps?: string[],
     unSelectedProps?: string[],
     options: Record<string, any> = { new: true },
-  ): Promise<unknown> {
+  ): Promise<T> {
     try {
       return await this.repo
         .findOneAndUpdate(filter, updatedProps, options)
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
+    } catch (error) {
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,
+      });
+    }
+  }
+
+  async updateOneById(
+    id: string,
+    updatedProps: Partial<T>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+    options: Record<string, any> = { new: true },
+  ): Promise<T> {
+    try {
+      return await this.repo
+        .findOneAndUpdate({ _id: createObjectId(id) }, updatedProps, options)
         .select(select(selectedProps, unSelectedProps))
         .lean();
     } catch (error) {
@@ -82,7 +102,7 @@ export class BaseRepository<T> {
     selectedProps?: string[],
     unSelectedProps?: string[],
     options: Record<string, any> = { new: true },
-  ): Promise<unknown> {
+  ): Promise<T> {
     try {
       return await this.repo
         .findOneAndDelete(filter, options)

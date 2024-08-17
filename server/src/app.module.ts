@@ -7,6 +7,7 @@ import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
 import { AuthGuard } from './guards/auth.guard';
 import { HttpExceptionFilter } from './exception-filters/http-exception-filter';
 import { FormatResponseInterceptor } from './interceptors/format-response.interceptor';
+import { CompanyModule } from './company/company.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { FormatResponseInterceptor } from './interceptors/format-response.interc
     /* Modules */
     AuthModule,
     UserModule,
+    CompanyModule,
   ],
 
   providers: [

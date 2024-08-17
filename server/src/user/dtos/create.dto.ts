@@ -1,21 +1,11 @@
-import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
-
-class Company {
-  @IsNotEmpty()
-  _id: string;
-
-  @IsNotEmpty()
-  @IsEmail()
-  email: string;
-}
+import { IsEmail, IsNotEmpty } from 'class-validator';
 
 export class CreateUserDTO {
   @IsNotEmpty()
   @IsEmail()
   email: string;
 
-  @IsNotEmpty({ message: 'Password is required' })
+  @IsNotEmpty()
   password: string;
 
   name?: string;
@@ -27,10 +17,6 @@ export class CreateUserDTO {
   address?: string;
 
   avatar?: string;
-
-  @ValidateNested()
-  @Type(() => Company)
-  company?: Company;
 
   createdBy?: Record<string, any>;
 }
