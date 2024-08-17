@@ -6,16 +6,17 @@ import { CreateCompnayDTO } from './dtos/create.dto';
 import { UpdateCompanyDTO } from './dtos/update.dto';
 import { AuthInfor } from 'src/decorators/userinfor.deco';
 import { ValidateEnumPipe } from 'src/pipes/validate-enum.pipe';
-import { ValidateExistancePipe } from 'src/pipes/validate-param.pipe';
+import { ValidateMongoObjectIdPipe } from 'src/pipes/validate-mongo-object-id.pipe';
 
 @Controller('company')
 export class CompanyController {
   constructor(private companyService: CompanyService) {}
 
+  @Public()
   @Post('/:userId')
   async createCompany(
     @Body() companyInfor: CreateCompnayDTO,
-    @Param('userId') userId: string,
+    @Param('userId', new ValidateMongoObjectIdPipe()) userId: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
     const createdBy = {

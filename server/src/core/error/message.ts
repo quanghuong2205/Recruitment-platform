@@ -10,4 +10,6 @@ export const ERRORMESSAGE = {
   COMPANY_EMAIL_ALREADY_USED: 'email has been already used by another company',
   COMPANY_NOT_FOUND: 'not found company',
   COMPANY_PHONE_ALREADY_USED: 'phone has been already used by another company',
+
+  MONGO_INVALID_OBJECT_ID: 'invalid id',
 };
