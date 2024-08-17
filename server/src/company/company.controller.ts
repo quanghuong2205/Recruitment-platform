@@ -7,6 +7,7 @@ import { UpdateCompanyDTO } from './dtos/update.dto';
 import { AuthInfor } from 'src/decorators/userinfor.deco';
 import { ValidateEnumPipe } from 'src/pipes/validate-enum.pipe';
 import { ValidateMongoObjectIdPipe } from 'src/pipes/validate-mongo-object-id.pipe';
+import { ResponseMessage } from 'src/decorators/response-message.deco';
 
 @Controller('company')
 export class CompanyController {
@@ -14,11 +15,13 @@ export class CompanyController {
 
   @Public()
   @Post('/:userId')
+  @ResponseMessage('hello success hello')
   async createCompany(
     @Body() companyInfor: CreateCompnayDTO,
     @Param('userId', new ValidateMongoObjectIdPipe()) userId: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
+    return 1;
     const createdBy = {
       _id: auth._id,
       email: auth.email,
