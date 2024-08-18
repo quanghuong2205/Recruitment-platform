@@ -3,7 +3,9 @@ import { Company, RequestForChange } from '../schemas/company.schema';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { createObjectId } from 'src/utils/mongoose/createObjectId';
+import { Injectable } from '@nestjs/common';
 
+@Injectable()
 export class CompanyRepository extends BaseRepository<Company> {
   constructor(@InjectModel(Company.name) private companyModel: Model<Company>) {
     super(companyModel);

@@ -57,7 +57,7 @@ export class MulterConfigService implements MulterOptionsFactory {
     callback: (error: Error | null, destination: string) => void,
   ) {
     /* Get folder */
-    const folder = (req.headers['folder'] ?? 'common') as string;
+    const folder = (req.headers['folder'] ?? 'general') as string;
 
     /* Validate folder */
     await this.validateExistance(folder);

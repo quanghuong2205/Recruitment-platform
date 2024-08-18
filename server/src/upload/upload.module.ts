@@ -3,10 +3,13 @@ import { UploadController } from './upload.controller';
 import { UploadService } from './upload.service';
 import { MulterModule } from '@nestjs/platform-express';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { MulterConfigService } from './multer.config-options';
+import { MulterConfigService } from './multer/multer.config-options';
+import { CloudinaryFactory } from './cloudinary/cloudinary.config';
+import { CloudinaryService } from './cloudinary/cloudianry.service';
 
 @Module({
   imports: [
+    /* Module module */
     MulterModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
@@ -19,6 +22,6 @@ import { MulterConfigService } from './multer.config-options';
     ConfigModule,
   ],
   controllers: [UploadController],
-  providers: [UploadService, ConfigService],
+  providers: [UploadService, CloudinaryFactory, CloudinaryService],
 })
 export class UploadModule {}
