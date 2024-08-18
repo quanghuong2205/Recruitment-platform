@@ -1,6 +1,5 @@
 import { ITokenPayload } from 'src/auth/token-payload.interface';
 import { Body, Controller, Param, Patch, Post } from '@nestjs/common';
-import { Public } from 'src/decorators/public.deco';
 import { CompanyService } from './company.service';
 import { CreateCompnayDTO } from './dtos/create.dto';
 import { UpdateCompanyDTO } from './dtos/update.dto';
@@ -13,7 +12,6 @@ import { ResponseMessage } from 'src/decorators/response-message.deco';
 export class CompanyController {
   constructor(private companyService: CompanyService) {}
 
-  @Public()
   @Post('/:userId')
   @ResponseMessage('hello success hello')
   async createCompany(
@@ -21,7 +19,6 @@ export class CompanyController {
     @Param('userId', new MongoObjectIdValidationPipe()) userId: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
-    return 1;
     const createdBy = {
       _id: auth._id,
       email: auth.email,
@@ -34,16 +31,13 @@ export class CompanyController {
     );
   }
 
-  @Public()
   @Patch('/view-request/:companyId/:status')
   async updateRequestHistory(
-    @Body() companyInfor: UpdateCompanyDTO,
     @Param('companyId') companyId: string,
     @Param('status', new EnumValidationPipe<string>(['rejected', 'approved']))
     status: string,
     @AuthInfor() auth: ITokenPayload,
   ) {
-    return companyId;
     const updatedBy = {
       _id: auth._id,
       email: auth.email,
@@ -55,7 +49,6 @@ export class CompanyController {
     );
   }
 
-  @Public()
   @Patch('/request-change/:companyId')
   async requestUpdate(
     @Body() companyInfor: UpdateCompanyDTO,
@@ -64,7 +57,6 @@ export class CompanyController {
     return await this.companyService.requestUpdate(companyId, companyInfor);
   }
 
-  @Public()
   @Patch('/:companyId')
   async updateCompany(
     @Body() companyInfor: UpdateCompanyDTO,

@@ -49,10 +49,40 @@ export class BaseRepository<T> {
     }
   }
 
+  async findOneByIdWithPopulate(
+    id: string,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+    populate?: {
+      path: string | string[];
+      selectedProps?: string[];
+      unSelectedProps?: string[];
+    },
+  ): Promise<T> {
+    try {
+      return await this.repo
+        .findOne({
+          _id: createObjectId(id),
+        })
+        .select(select(selectedProps, unSelectedProps))
+        .populate(
+          populate.path,
+          select(populate.selectedProps, populate.unSelectedProps),
+        )
+        .lean();
+    } catch (error) {
+      console.log(error);
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
+      });
+    }
+  }
+
   async create(props: Partial<T>): Promise<T | any> {
     try {
       return (await this.repo.create(props))['_doc'];
     } catch (error) {
+      console.log('error:: ', error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_CREATE,
       });
@@ -91,6 +121,7 @@ export class BaseRepository<T> {
         .select(select(selectedProps, unSelectedProps))
         .lean();
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_UPDATE,
       });

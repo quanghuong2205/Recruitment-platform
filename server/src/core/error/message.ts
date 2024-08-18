@@ -11,5 +11,7 @@ export const ERRORMESSAGE = {
   COMPANY_NOT_FOUND: 'not found company',
   COMPANY_PHONE_ALREADY_USED: 'phone has been already used by another company',
 
+  DOCUMENT_NOT_FOUND: 'not found document',
+
   MONGO_INVALID_OBJECT_ID: 'invalid id',
 };

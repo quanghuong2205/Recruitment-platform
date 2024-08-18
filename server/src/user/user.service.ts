@@ -90,7 +90,9 @@ export class UserService extends BaseCRUDService<
   }
 
   async updateUserCompany(userId: string, companyInfor: Record<string, any>) {
-    return await this.userRepo.updateOneById(userId, companyInfor);
+    return await this.userRepo.updateOneById(userId, {
+      company: companyInfor,
+    } as any);
   }
 
   async validatePassword(plain: string, hash: string): Promise<boolean> {

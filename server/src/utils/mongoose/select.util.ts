@@ -1,7 +1,7 @@
 export const select = (
   selectedProps: string[] = [],
   unSelectedProps: string[] = [],
-) => {
+): string => {
   if (selectedProps.length) {
     return selectedProps.join(' ');
   }

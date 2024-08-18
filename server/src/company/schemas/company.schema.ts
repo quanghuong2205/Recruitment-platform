@@ -3,7 +3,7 @@ import { HydratedDocument, Types } from 'mongoose';
 
 export type CompanyDocument = HydratedDocument<Company>;
 
-@Schema({ id: false })
+@Schema({ _id: false })
 class BasedCompanyInfor {
   @Prop({ required: true })
   email: string;
@@ -13,7 +13,7 @@ class BasedCompanyInfor {
 
   description: string;
 
-  @Prop({ type: Object })
+  @Prop({ type: Object, default: null })
   logo_url: {
     public_id: string;
     original_url: string;
@@ -36,6 +36,7 @@ class BasedCompanyInfor {
   website: string;
 }
 
+@Schema({ _id: false })
 export class RequestForChange extends BasedCompanyInfor {
   @Prop({ enum: ['pending', 'approved', 'rejected'], default: 'pending' })
   status: string;
@@ -61,6 +62,7 @@ export class Company extends BasedCompanyInfor {
     email: string;
   };
 
+  @Prop({ type: Object })
   updated_by: {
     _id: Types.ObjectId;
     email: string;

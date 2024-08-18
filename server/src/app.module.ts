@@ -9,6 +9,7 @@ import { HttpExceptionFilter } from './exception-filters/http-exception-filter';
 import { FormatResponseInterceptor } from './interceptors/format-response.interceptor';
 import { CompanyModule } from './company/company.module';
 import { UploadModule } from './upload/upload.module';
+import { JobModule } from './job/job.module';
 
 @Module({
   imports: [
@@ -32,6 +33,7 @@ import { UploadModule } from './upload/upload.module';
     UserModule,
     CompanyModule,
     UploadModule,
+    JobModule,
   ],
 
   providers: [
