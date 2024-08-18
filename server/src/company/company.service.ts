@@ -51,7 +51,7 @@ export class CompanyService extends BaseCRUDService<
     /* Create company */
     const newCompany = await super.create({
       ...companyInfor,
-      createdBy,
+      created_by: createdBy,
     });
 
     /* Update user company */
@@ -90,7 +90,7 @@ export class CompanyService extends BaseCRUDService<
     /* Save request for change */
     const updatedCompany = await this.updateOne(
       { _id: createObjectId(companyId) },
-      { requestForChange: companyInfor } as any,
+      { request_for_change: companyInfor } as any,
     );
 
     /* Return data */
@@ -106,7 +106,7 @@ export class CompanyService extends BaseCRUDService<
     const company = await this.validateCompany(companyId);
 
     /* Get request for change */
-    const requestForChange = company.requestForChange;
+    const requestForChange = company.request_for_change;
 
     /* Handle request */
     const updatedCompany = await this.companyRepo.updateRequestForChange(
@@ -131,7 +131,7 @@ export class CompanyService extends BaseCRUDService<
     /* Update company */
     const updatedCompany = await this.companyRepo.updateOneById(companyId, {
       ...companyInfor,
-      updatedBy,
+      updated_by: updatedBy,
     } as any);
 
     /* Return data */

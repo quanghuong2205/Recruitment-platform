@@ -36,29 +36,33 @@ export class User {
   @Prop()
   address: string;
 
-  @Prop()
-  avatar: string;
+  @Prop({ type: Object })
+  avatar_url: {
+    public_id: string;
+    original_url: string;
+    resized_url: string;
+  };
 
   @Prop({ default: false })
-  isDeleted: boolean;
+  is_deleted: boolean;
 
   @Prop({ default: false })
-  isVerifiedEmail: boolean;
+  is_verified_email: boolean;
 
   @Prop({ type: Object })
-  createdBy: {
+  created_by: {
     _id: Types.ObjectId;
     email: string;
   };
 
   @Prop({ type: Object })
-  updatedBy: {
+  updated_by: {
     _id: Types.ObjectId;
     email: string;
   };
 
   @Prop({ type: Object })
-  deletedBy: {
+  deleted_by: {
     _id: Types.ObjectId;
     email: string;
   };

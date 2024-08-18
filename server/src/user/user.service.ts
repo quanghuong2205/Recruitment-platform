@@ -38,7 +38,7 @@ export class UserService extends BaseCRUDService<
       ...userInfor,
       password: hash,
       role: userInfor?.role ?? 'user',
-      createdBy,
+      created_by: createdBy,
     });
 
     /* Remove some fields from returned object */
@@ -62,7 +62,7 @@ export class UserService extends BaseCRUDService<
           errorCode: ERRORCODES.AUTH_USER_EXIST,
         });
       }
-      userInfor.isVerifiedEmail = false;
+      userInfor.is_verified_email = false;
     }
 
     /* Hash password */
@@ -73,7 +73,7 @@ export class UserService extends BaseCRUDService<
     /* Update user */
     const updatedUser = await this.updateOne(
       { _id: createObjectId(userId) },
-      { ...userInfor, updatedBy },
+      { ...userInfor, updated_by: updatedBy },
       [],
       ['password', '__v'],
     );

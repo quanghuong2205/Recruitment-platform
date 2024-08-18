@@ -55,10 +55,10 @@ export class BaseCRUDService<T, CDTO, UDTO> {
       .select(select(selectedProps, unSelectedProps));
   }
 
-  async create(payload: CDTO): Promise<T> {
+  async create(props: CDTO): Promise<T> {
     return await this.repository.create({
       _id: new Types.ObjectId(),
-      ...payload,
+      ...props,
     } as any);
   }
 

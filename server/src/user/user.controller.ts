@@ -111,7 +111,7 @@ export class UserController {
     /* Delete user */
     const deletedUser = await this.userService.softDelete(
       { _id: createObjectId(userId) },
-      { deletedBy },
+      { deleted_by: deletedBy },
       [],
       ['password', '__v'],
     );

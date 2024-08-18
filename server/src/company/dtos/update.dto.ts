@@ -9,7 +9,7 @@ export class UpdateCompanyDTO {
 
   description: string;
 
-  logo_url?: string;
+  logo_url?: Record<string, any>;
 
   @IsNotEmpty()
   phone?: string;
@@ -21,11 +21,11 @@ export class UpdateCompanyDTO {
   size: string;
 
   @IsNotEmpty()
-  taxCode?: string;
+  tax_code?: string;
 
   website?: string;
 
   status: string;
 
-  updatedBy?: Record<string, any>;
+  updated_by?: Record<string, any>;
 }

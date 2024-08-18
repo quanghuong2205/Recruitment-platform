@@ -13,8 +13,12 @@ class BasedCompanyInfor {
 
   description: string;
 
-  @Prop()
-  logo_url: string;
+  @Prop({ type: Object })
+  logo_url: {
+    public_id: string;
+    original_url: string;
+    resized_url: string;
+  };
 
   @Prop({ required: true })
   phone: string;
@@ -26,7 +30,7 @@ class BasedCompanyInfor {
   size: string;
 
   @Prop({ required: true })
-  taxCode: string;
+  tax_code: string;
 
   @Prop()
   website: string;
@@ -40,30 +44,30 @@ export class RequestForChange extends BasedCompanyInfor {
 @Schema({ timestamps: true })
 export class Company extends BasedCompanyInfor {
   @Prop({ default: null })
-  requestForChange: RequestForChange;
+  request_for_change: RequestForChange;
 
   @Prop([Object])
-  requestHistory: {
+  request_history: {
     data: RequestForChange;
-    viewedBy: {
+    viewed_by: {
       _id: Types.ObjectId;
       email: string;
     };
   };
 
   @Prop({ type: Object })
-  createdBy: {
+  created_by: {
     _id: Types.ObjectId;
     email: string;
   };
 
-  updatedBy: {
+  updated_by: {
     _id: Types.ObjectId;
     email: string;
   };
 
   @Prop({ type: Object })
-  deletedBy: {
+  deleted_by: {
     _id: Types.ObjectId;
     email: string;
   };

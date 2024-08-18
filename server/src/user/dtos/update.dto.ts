@@ -11,9 +11,9 @@ export class UpdateUserDTO {
 
   address?: string;
 
-  avatar?: string;
+  is_verified_email?: boolean;
 
-  isVerifiedEmail?: boolean;
+  avatar_url?: Record<string, any>;
 
-  updatedBy: Record<string, any>;
+  updated_by: Record<string, any>;
 }

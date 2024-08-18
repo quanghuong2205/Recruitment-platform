@@ -10,7 +10,7 @@ export class CreateCompnayDTO {
 
   description: string;
 
-  logo_url?: string;
+  logo_url?: Record<string, any>;
 
   @IsNotEmpty()
   phone?: string;
@@ -22,9 +22,9 @@ export class CreateCompnayDTO {
   size: string;
 
   @IsNotEmpty()
-  taxCode?: string;
+  tax_code?: string;
 
   website?: string;
 
-  createdBy: Record<string, any>;
+  created_by: Record<string, any>;
 }

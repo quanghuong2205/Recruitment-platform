@@ -28,7 +28,7 @@ export class CompanyRepository extends BaseRepository<Company> {
     /* Format history request field */
     const history = {
       data: requestForChange,
-      viewedBy: updatedBy,
+      viewed_by: updatedBy,
     };
     requestForChange.status = status;
     delete requestForChange['_id'];
@@ -37,8 +37,8 @@ export class CompanyRepository extends BaseRepository<Company> {
       return await this.repo.findOneAndUpdate(
         { _id: createObjectId(companyId) },
         {
-          $push: { requestHistory: history },
-          $set: { requestForChange: null },
+          $push: { request_history: history },
+          $set: { request_for_change: null },
         } as any,
 
         { new: true },
@@ -49,8 +49,8 @@ export class CompanyRepository extends BaseRepository<Company> {
       return await this.repo.findOneAndUpdate(
         { _id: createObjectId(companyId) },
         {
-          $push: { requestHistory: history },
-          $set: { ...requestForChange, requestForChange: null },
+          $push: { request_history: history },
+          $set: { ...requestForChange, request_for_change: null },
         } as any,
 
         { new: true },

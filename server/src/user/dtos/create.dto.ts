@@ -16,7 +16,7 @@ export class CreateUserDTO {
 
   address?: string;
 
-  avatar?: string;
+  avatar_url?: Record<string, any>;
 
-  createdBy?: Record<string, any>;
+  created_by?: Record<string, any>;
 }
