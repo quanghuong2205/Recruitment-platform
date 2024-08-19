@@ -37,6 +37,27 @@ export class BaseRepository<T> {
     }
   }
 
+  async findOneExcludingId(
+    id: string,
+    filter: FilterQuery<T>,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+  ): Promise<T> {
+    try {
+      return await this.repo
+        .findOne({
+          ...filter,
+          _id: { $ne: createObjectId(id) },
+        })
+        .select(select(selectedProps, unSelectedProps))
+        .lean();
+    } catch (error) {
+      throw new InternalServerErrorException({
+        errorCode: ERRORCODES.DOCUMENT_FAIL_FIND,
+      });
+    }
+  }
+
   async findOneWithPopulate(
     filter: FilterQuery<T>,
     selectedProps?: string[],

@@ -1,19 +1,20 @@
+import { IsOptional, IsPositive, ValidateNested } from 'class-validator';
+import { AvatarUrlDTO } from './common.dto';
+import { Type } from 'class-transformer';
+
 export class UpdateUserDTO {
-  email?: string;
-
-  password?: string;
-
+  @IsOptional()
   name?: string;
 
-  role?: string;
-
+  @IsOptional()
+  @IsPositive()
   age?: number;
 
+  @IsOptional()
   address?: string;
 
-  is_verified_email?: boolean;
-
-  avatar_url?: Record<string, any>;
-
-  updated_by: Record<string, any>;
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => AvatarUrlDTO)
+  avatar_url?: AvatarUrlDTO;
 }

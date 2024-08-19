@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument } from 'mongoose';
 import { Types } from 'mongoose';
+import { validateEmail } from 'src/utils/mongoose/validators';
 
 export type UserDocument = HydratedDocument<User>;
 
@@ -9,10 +10,13 @@ export class User {
   @Prop()
   _id: Types.ObjectId;
 
-  @Prop()
+  @Prop({ required: true })
   name: string;
 
-  @Prop({ required: true })
+  @Prop({
+    required: true,
+    validate: validateEmail,
+  })
   email: string;
 
   @Prop({ required: true })
@@ -20,7 +24,7 @@ export class User {
 
   @Prop({
     required: true,
-    enum: ['user', 'admin', 'employer', 'employee', 'hr'],
+    enum: ['admin', 'employer', 'employee', 'hr'],
   })
   role: string;
 
@@ -30,7 +34,7 @@ export class User {
     email: string;
   };
 
-  @Prop()
+  @Prop({ min: 0 })
   age: number;
 
   @Prop()
@@ -48,6 +52,9 @@ export class User {
 
   @Prop({ default: false })
   is_verified_email: boolean;
+
+  @Prop({ default: false })
+  is_verified_phone: boolean;
 
   @Prop({ type: Object })
   created_by: {

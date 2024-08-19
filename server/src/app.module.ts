@@ -30,8 +30,8 @@ import { JobModule } from './job/job.module';
 
     /* Modules */
     AuthModule,
-    UserModule,
     CompanyModule,
+    UserModule,
     UploadModule,
     JobModule,
   ],

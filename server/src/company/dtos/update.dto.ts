@@ -1,47 +1,34 @@
 import { Type } from 'class-transformer';
-import { IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
-
-class LogoUrl {
-  @IsNotEmpty()
-  public_id: string;
-
-  @IsNotEmpty()
-  original_url: string;
-
-  @IsNotEmpty()
-  resized_url: string;
-}
+import { IsEmail, IsOptional, ValidateNested } from 'class-validator';
+import { LogoUrl } from './common.dto';
 
 export class UpdateCompanyDTO {
-  @IsNotEmpty()
+  @IsOptional()
   @IsEmail()
   email: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   name: string;
 
+  @IsOptional()
   description: string;
 
   @ValidateNested()
   @Type(() => LogoUrl)
   logo_url?: LogoUrl;
 
-  @IsNotEmpty()
+  @IsOptional()
   phone: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   address: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   size: string;
 
-  @IsNotEmpty()
+  @IsOptional()
   tax_code: string;
 
+  @IsOptional()
   website?: string;
-
-  status: string;
-
-  @IsNotEmpty()
-  updated_by: Record<string, any>;
 }

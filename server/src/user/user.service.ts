@@ -1,5 +1,10 @@
 import { UserRepository } from './repositories/user.repo';
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { User } from './schemas/user.schema';
 import bcrypt from 'bcrypt';
 import { BaseCRUDService } from 'src/core/base/crudservice.base';
@@ -7,7 +12,7 @@ import { CreateUserDTO } from './dtos/create.dto';
 import { UpdateUserDTO } from './dtos/update.dto';
 import { ERRORMESSAGE } from 'src/core/error/message';
 import { ERRORCODES } from 'src/core/error/code';
-import { createObjectId } from 'src/utils/mongoose/createObjectId';
+import { CompanyService } from 'src/company/company.service';
 
 @Injectable()
 export class UserService extends BaseCRUDService<
@@ -15,7 +20,11 @@ export class UserService extends BaseCRUDService<
   CreateUserDTO,
   UpdateUserDTO
 > {
-  constructor(private userRepo: UserRepository) {
+  constructor(
+    private userRepo: UserRepository,
+    @Inject(forwardRef(() => CompanyService))
+    private companyService: CompanyService,
+  ) {
     super(userRepo, 'user services');
   }
 
@@ -49,9 +58,8 @@ export class UserService extends BaseCRUDService<
     const newUser = await super.create({
       ...userInfor,
       password: hash,
-      role: userInfor?.role ?? 'user',
       created_by: createdBy,
-    });
+    } as any);
 
     /* Remove some fields from returned object */
     delete newUser['password'];
@@ -65,31 +73,44 @@ export class UserService extends BaseCRUDService<
     userInfor: UpdateUserDTO,
     updatedBy: Record<string, any>,
   ) {
-    /* Valdate email */
-    if (userInfor?.email) {
-      const isExisted = await this.validateEmail(userInfor.email);
-      if (isExisted) {
-        throw new BadRequestException({
-          message: ERRORMESSAGE.AUTH_USER_EXIST,
-          errorCode: ERRORCODES.AUTH_USER_EXIST,
-        });
-      }
-      userInfor.is_verified_email = false;
-    }
-
-    /* Hash password */
-    if (userInfor?.password) {
-      userInfor.password = await this.hashPassword(userInfor.password);
-    }
-
     /* Update user */
-    const updatedUser = await this.updateOne(
-      { _id: createObjectId(userId) },
-      { ...userInfor, updated_by: updatedBy },
-    );
+    const updatedUser = await this.userRepo.updateOneById(userId, {
+      ...userInfor,
+      updated_by: updatedBy,
+    } as any);
 
     /* Return data */
     return updatedUser;
+  }
+
+  async deleteUser(userId: string, deletedBy: Record<string, any>) {
+    /* Get user */
+    const user = await this.userRepo.findOneById(userId);
+
+    /* User not existed */
+    if (user.is_deleted) {
+      throw new BadRequestException({
+        message: ERRORMESSAGE.USER_NOT_EXISTED,
+        errorCode: ERRORCODES.USER_NOT_EXISTED,
+      });
+    }
+
+    /* Not delete admin */
+    if (user.role === 'admin') {
+      throw new BadRequestException({
+        message: ERRORMESSAGE.AUTH_NOT_DELETE_ADMIN,
+        errorCode: ERRORCODES.AUTH_NOT_DELETE_ADMIN,
+      });
+    }
+
+    /* Unactive employee company */
+    if (user.role === 'employee') {
+      const companyId: string = user.company._id.toString();
+      this.companyService.softDeleteById(companyId);
+    }
+
+    /* Delete user */
+    return await this.softDeleteById(userId, { deleted_by: deletedBy });
   }
 
   async hashPassword(plain: string): Promise<string> {

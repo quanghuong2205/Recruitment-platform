@@ -63,6 +63,7 @@ export class AuthService {
       _id: userId,
       email,
       name: user.name,
+      role: user.role,
     });
 
     /* Save token */

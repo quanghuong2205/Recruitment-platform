@@ -1,4 +1,13 @@
-import { IsEmail, IsNotEmpty } from 'class-validator';
+import { Type } from 'class-transformer';
+import {
+  IsEmail,
+  IsNotEmpty,
+  IsOptional,
+  MaxLength,
+  MinLength,
+  ValidateNested,
+} from 'class-validator';
+import { AvatarUrlDTO } from './common.dto';
 
 export class CreateUserDTO {
   @IsNotEmpty()
@@ -6,17 +15,23 @@ export class CreateUserDTO {
   email: string;
 
   @IsNotEmpty()
+  @MinLength(8)
+  @MaxLength(16)
   password: string;
 
-  name?: string;
+  @IsNotEmpty()
+  name: string;
 
-  role: string;
-
+  @IsOptional()
   age?: number;
 
+  @IsOptional()
   address?: string;
 
-  avatar_url?: Record<string, any>;
+  @IsNotEmpty()
+  role: string;
 
-  created_by?: Record<string, any>;
+  @ValidateNested()
+  @Type(() => AvatarUrlDTO)
+  avatar_url?: AvatarUrlDTO;
 }

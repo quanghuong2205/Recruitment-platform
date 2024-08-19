@@ -1,16 +1,6 @@
 import { Type } from 'class-transformer';
 import { IsEmail, IsNotEmpty, ValidateNested } from 'class-validator';
-
-class LogoUrl {
-  @IsNotEmpty()
-  public_id: string;
-
-  @IsNotEmpty()
-  original_url: string;
-
-  @IsNotEmpty()
-  resized_url: string;
-}
+import { LogoUrl } from './common.dto';
 
 export class CreateCompnayDTO {
   @IsNotEmpty()
@@ -20,6 +10,7 @@ export class CreateCompnayDTO {
   @IsNotEmpty()
   name: string;
 
+  @IsNotEmpty()
   description: string;
 
   @ValidateNested()
@@ -39,6 +30,4 @@ export class CreateCompnayDTO {
   tax_code: string;
 
   website?: string;
-
-  created_by: Record<string, any>;
 }

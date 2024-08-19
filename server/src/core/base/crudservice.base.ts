@@ -101,13 +101,13 @@ export class BaseCRUDService<T, CDTO, UDTO> {
 
   async softDeleteById(
     id: string,
-    updatedProps: Record<string, any>,
+    updatedProps?: Record<string, any>,
     options?: Record<string, any>,
   ) {
     return await this.repository.updateOne(
       { _id: createObjectId(id) },
       {
-        isDeleted: true,
+        is_deleted: true,
         ...updatedProps,
       } as any,
       options,

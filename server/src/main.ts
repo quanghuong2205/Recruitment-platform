@@ -12,7 +12,11 @@ async function bootstrap() {
   app.use(cookieParser());
 
   /* Global pipes */
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+    }),
+  );
 
   /* Listen */
   const port = <number>configService.get<number>('PORT', { infer: true });

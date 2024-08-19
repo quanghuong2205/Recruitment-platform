@@ -85,34 +85,29 @@ export class UserController {
     };
 
     /* Update user */
-    const updatedUser = await this.userService.updateUser(
-      userId,
-      userInfor,
-      updatedBy,
-    );
+    await this.userService.updateUser(userId, userInfor, updatedBy);
 
     /* Return data */
     return {
-      user: updatedUser,
+      user: {
+        _id: userId,
+      },
     };
   }
 
   @Delete('/:id')
   async deleteUser(
     @Param('id') userId: string,
-    @AuthInfor() user: ITokenPayload,
+    @AuthInfor() auth: ITokenPayload,
   ) {
     /* Get auth */
     const deletedBy = {
-      _id: user._id,
-      email: user.email,
+      _id: auth._id,
+      email: auth.email,
     };
 
     /* Delete user */
-    await this.userService.softDelete(
-      { _id: createObjectId(userId) },
-      { deleted_by: deletedBy },
-    );
+    await this.userService.deleteUser(userId, deletedBy);
 
     /* Return data */
     return {

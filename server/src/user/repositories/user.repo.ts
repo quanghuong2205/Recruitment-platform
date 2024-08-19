@@ -13,4 +13,8 @@ export class UserRepository extends BaseRepository<User> {
   async findUserByEmail(email: string): Promise<User> {
     return await this.findOne({ email });
   }
+
+  async findUserByEmailExcludingId(email: string, userId: string) {
+    return await this.findOneExcludingId(userId, { email });
+  }
 }

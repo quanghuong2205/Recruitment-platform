@@ -26,7 +26,7 @@ export class JobRepository extends BaseRepository<Job> {
     requestForChange.status = status;
     delete requestForChange['_id'];
 
-    if (status === 'reviewing') {
+    if (status === 'reviewing' || status === 'pending') {
       return await this.repo.findOneAndUpdate(
         { _id: createObjectId(jobId) },
         {

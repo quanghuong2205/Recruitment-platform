@@ -1,16 +1,18 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { HydratedDocument, Types } from 'mongoose';
+import { validateEmail } from 'src/utils/mongoose/validators';
 
 export type CompanyDocument = HydratedDocument<Company>;
 
 @Schema({ _id: false })
 class BasedCompanyInfor {
-  @Prop({ required: true })
+  @Prop({ required: true, validate: validateEmail })
   email: string;
 
   @Prop({ required: true })
   name: string;
 
+  @Prop({ required: true })
   description: string;
 
   @Prop({ type: Object, default: null })
@@ -38,7 +40,10 @@ class BasedCompanyInfor {
 
 @Schema({ _id: false })
 export class RequestForChange extends BasedCompanyInfor {
-  @Prop({ enum: ['pending', 'approved', 'rejected'], default: 'pending' })
+  @Prop({
+    enum: ['pending', 'approved', 'rejected', 'reviewing'],
+    default: 'pending',
+  })
   status: string;
 }
 
@@ -54,6 +59,7 @@ export class Company extends BasedCompanyInfor {
       _id: Types.ObjectId;
       email: string;
     };
+    created_at: Date;
   };
 
   @Prop({ type: Object })

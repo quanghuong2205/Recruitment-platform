@@ -1,4 +1,9 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  forwardRef,
+  Inject,
+  Injectable,
+} from '@nestjs/common';
 import { BaseCRUDService } from 'src/core/base/crudservice.base';
 import { Company } from './schemas/company.schema';
 import { CreateCompnayDTO } from './dtos/create.dto';
@@ -16,8 +21,9 @@ export class CompanyService extends BaseCRUDService<
   UpdateCompanyDTO
 > {
   constructor(
-    private userService: UserService,
     private companyRepo: CompanyRepository,
+    @Inject(forwardRef(() => UserService))
+    private userService: UserService,
   ) {
     super(companyRepo, 'company servies');
   }
@@ -27,7 +33,8 @@ export class CompanyService extends BaseCRUDService<
     companyInfor: CreateCompnayDTO,
     createdBy: Record<string, any>,
   ) {
-    const { email } = companyInfor;
+    const { email, phone } = companyInfor;
+
     /* Valdate email */
     let isExisted = await this.validateEmail(email);
     if (isExisted) {
@@ -38,7 +45,7 @@ export class CompanyService extends BaseCRUDService<
     }
 
     /* Valdate phone */
-    isExisted = await this.validateEmail(email);
+    isExisted = await this.validatePhone(phone);
     if (isExisted) {
       throw new BadRequestException({
         message: ERRORMESSAGE.COMPANY_PHONE_ALREADY_USED,
@@ -46,13 +53,13 @@ export class CompanyService extends BaseCRUDService<
       });
     }
 
-    /* Generate text image */
+    /* Generate text image url */
 
     /* Create company */
     const newCompany = await super.create({
       ...companyInfor,
       created_by: createdBy,
-    });
+    } as any);
 
     /* Update user company */
     await this.userService.updateUserCompany(userId, {
@@ -67,7 +74,9 @@ export class CompanyService extends BaseCRUDService<
   async requestUpdate(companyId: string, companyInfor: UpdateCompanyDTO) {
     /* Valdate email */
     if (companyInfor?.email) {
-      const isExisted = await this.validateEmail(companyInfor.email);
+      const isExisted = await this.companyRepo.findOneExcludingId(companyId, {
+        email: companyInfor.email,
+      });
       if (isExisted) {
         throw new BadRequestException({
           message: ERRORMESSAGE.COMPANY_EMAIL_ALREADY_USED,
@@ -78,7 +87,9 @@ export class CompanyService extends BaseCRUDService<
 
     /* Valdate phone */
     if (companyInfor?.phone) {
-      const isExisted = await this.validatePhone(companyInfor.phone);
+      const isExisted = await this.companyRepo.findOneExcludingId(companyId, {
+        phone: companyInfor.phone,
+      });
       if (isExisted) {
         throw new BadRequestException({
           message: ERRORMESSAGE.COMPANY_PHONE_ALREADY_USED,
