@@ -72,8 +72,14 @@ export class AuthService {
     this.setRefreshTokenCookie(response, refreshToken);
 
     /* Return data */
+    const { _id, name, avatar_url } = user;
     return {
-      user,
+      user: {
+        _id,
+        name,
+        avatar_url,
+        email,
+      },
       access_token: accessToken,
     };
   }
@@ -100,13 +106,19 @@ export class AuthService {
     } as any);
 
     /* Return data */
+    const { _id, name, avatar_url } = newUser;
     return {
-      user: newUser,
+      user: {
+        _id,
+        name,
+        email,
+        avatar_url,
+      },
     };
   }
 
   async signOut(request: Request, response: Response): Promise<unknown> {
-    console.log(request['user']);
+    /* Get userId */
     const userId: string = request['user']._id;
 
     /* Clear token */
@@ -121,7 +133,11 @@ export class AuthService {
     });
 
     /* Return data */
-    return {};
+    return {
+      user: {
+        _id: userId,
+      },
+    };
   }
 
   async refreshTokenPair(
@@ -158,7 +174,6 @@ export class AuthService {
       /* Return token */
       return accessToken;
     } catch (error) {
-      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.AUTH_FAIL_SIGN_ACCESS_TOKEN,
       });

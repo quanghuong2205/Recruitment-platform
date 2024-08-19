@@ -1,7 +1,7 @@
 import { BaseRepository } from 'src/core/base/repository.base';
 import { Key } from '../schemas/key.schema';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose';
+import { Model } from 'mongoose';
 import { createObjectId } from 'src/utils/mongoose/createObjectId';
 import { Injectable } from '@nestjs/common';
 
@@ -16,14 +16,10 @@ export class KeyRepository extends BaseRepository<Key> {
     userId: string,
   ): Promise<unknown> {
     return await this.updateOne(
-      { _id: new Types.ObjectId(userId) },
+      { _id: createObjectId(userId) },
       {
-        user_id: createObjectId(userId),
         refresh_token: refreshToken,
       },
-      [],
-      [],
-      { new: true, upsert: true },
     );
   }
 }

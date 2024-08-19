@@ -1,3 +1,4 @@
+import { UserService } from 'src/user/user.service';
 import { AuthService } from './auth.service';
 import { Body, Controller, Post, Req, Res, UseGuards } from '@nestjs/common';
 import { SignInDTO } from './dtos/signIn.dto';
@@ -8,7 +9,10 @@ import { RefreshTokenGuard } from 'src/guards/refresh-token.guard';
 
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UserService,
+  ) {}
 
   @Public()
   @Post('sign-in')
@@ -33,11 +37,25 @@ export class AuthController {
     return await this.authService.signOut(request, response);
   }
 
+  /* marked */
   @Public()
   @UseGuards(RefreshTokenGuard)
   @Post('infor')
   async getAuthInfor(@Req() request: Request) {
-    return request['user'];
+    /* Get userId */
+    const userId: string = request['user']._id;
+
+    /* Get user */
+    const user = await this.userService.getUserInfor(
+      userId,
+      ['email', 'name', 'avatar_url', '_id', 'role', 'is_verified_email'],
+      [],
+    );
+
+    /* Return data */
+    return {
+      user,
+    };
   }
 
   @Public()

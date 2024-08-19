@@ -19,6 +19,18 @@ export class UserService extends BaseCRUDService<
     super(userRepo, 'user services');
   }
 
+  async getUserInfor(
+    userId: string,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+  ) {
+    return await this.userRepo.findOneById(
+      userId,
+      selectedProps,
+      unSelectedProps,
+    );
+  }
+
   async createUser(userInfor: CreateUserDTO, createdBy: Record<string, any>) {
     const { email, password } = userInfor;
     /* Valdate email */
@@ -74,8 +86,6 @@ export class UserService extends BaseCRUDService<
     const updatedUser = await this.updateOne(
       { _id: createObjectId(userId) },
       { ...userInfor, updated_by: updatedBy },
-      [],
-      ['password', '__v'],
     );
 
     /* Return data */

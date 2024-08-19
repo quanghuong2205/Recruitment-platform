@@ -1,6 +1,5 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-import { UserModule } from './user/user.module';
 import { MongooseModule } from '@nestjs/mongoose';
 import { AuthModule } from './auth/auth.module';
 import { APP_FILTER, APP_GUARD, APP_INTERCEPTOR } from '@nestjs/core';
@@ -9,6 +8,7 @@ import { HttpExceptionFilter } from './exception-filters/http-exception-filter';
 import { FormatResponseInterceptor } from './interceptors/format-response.interceptor';
 import { CompanyModule } from './company/company.module';
 import { UploadModule } from './upload/upload.module';
+import { UserModule } from './user/user.module';
 import { JobModule } from './job/job.module';
 
 @Module({

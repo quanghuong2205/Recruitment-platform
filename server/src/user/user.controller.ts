@@ -109,16 +109,16 @@ export class UserController {
     };
 
     /* Delete user */
-    const deletedUser = await this.userService.softDelete(
+    await this.userService.softDelete(
       { _id: createObjectId(userId) },
       { deleted_by: deletedBy },
-      [],
-      ['password', '__v'],
     );
 
     /* Return data */
     return {
-      user: deletedUser,
+      user: {
+        _id: userId,
+      },
     };
   }
 }

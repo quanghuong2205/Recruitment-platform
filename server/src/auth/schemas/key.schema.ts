@@ -5,7 +5,7 @@ export type KeyDocument = HydratedDocument<Key>;
 
 @Schema({ timestamps: true })
 export class Key {
-  @Prop({ isRequired: true })
+  @Prop({ required: true })
   user_id: Types.ObjectId;
 
   @Prop({ required: true })
