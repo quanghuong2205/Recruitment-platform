@@ -2,6 +2,7 @@ import { BaseRepository } from './repository.base';
 import aqp from 'api-query-params';
 import { select } from 'src/utils/mongoose/select.util';
 import { FilterQuery, Types } from 'mongoose';
+import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
 export class BaseCRUDService<T, CDTO, UDTO> {
   private repository: BaseRepository<T>;
@@ -44,6 +45,7 @@ export class BaseCRUDService<T, CDTO, UDTO> {
     const skip = (defaultPage - 1) * defaultLimit;
 
     /* Sort condition */
+    const sortBy: Record<string, any> = parsedQuery.sort;
 
     /* Query documents */
     return await this.repository
@@ -51,6 +53,7 @@ export class BaseCRUDService<T, CDTO, UDTO> {
       .find(parsedQuery?.filter ?? {})
       .limit(defaultLimit)
       .skip(skip)
+      .sort(sortBy)
       .populate(parsedQuery.population)
       .select(select(selectedProps, unSelectedProps));
   }
@@ -65,38 +68,25 @@ export class BaseCRUDService<T, CDTO, UDTO> {
   async updateOne(
     filter: FilterQuery<T>,
     updatedProps: UDTO,
-    selectedProps?: string[],
-    unSelectedProps?: string[],
     options?: Record<string, any>,
   ): Promise<any> {
     return await this.repository.updateOne(
       filter,
       updatedProps as any,
-      selectedProps,
-      unSelectedProps,
       options,
     );
   }
 
   async deleteOne(
     filter: FilterQuery<T>,
-    selectedProps?: string[],
-    unSelectedProps?: string[],
     options?: Record<string, any>,
   ): Promise<any> {
-    return await this.repository.deleteOne(
-      filter,
-      selectedProps,
-      unSelectedProps,
-      options,
-    );
+    return await this.repository.deleteOne(filter, options);
   }
 
   async softDelete(
     filter: FilterQuery<T>,
     updatedProps: Record<string, any>,
-    selectedProps?: string[],
-    unSelectedProps?: string[],
     options?: Record<string, any>,
   ) {
     return await this.repository.updateOne(
@@ -105,8 +95,21 @@ export class BaseCRUDService<T, CDTO, UDTO> {
         isDeleted: true,
         ...updatedProps,
       } as any,
-      selectedProps,
-      unSelectedProps,
+      options,
+    );
+  }
+
+  async softDeleteById(
+    id: string,
+    updatedProps: Record<string, any>,
+    options?: Record<string, any>,
+  ) {
+    return await this.repository.updateOne(
+      { _id: createObjectId(id) },
+      {
+        isDeleted: true,
+        ...updatedProps,
+      } as any,
       options,
     );
   }
