@@ -8,6 +8,7 @@ import { WorkingTimeDTO } from './dtos/common.dto';
 import { createObjectId } from 'src/utils/mongoose/createObjectId';
 import { ERRORMESSAGE } from 'src/core/error/message';
 import { ERRORCODES } from 'src/core/error/code';
+import { CompanyService } from 'src/company/company.service';
 
 @Injectable()
 export class JobService extends BaseCRUDService<
@@ -15,15 +16,23 @@ export class JobService extends BaseCRUDService<
   CreateJobDTO,
   UpdateJobDTO
 > {
-  constructor(private jobRepo: JobRepository) {
+  constructor(
+    private jobRepo: JobRepository,
+    private companyService: CompanyService,
+  ) {
     super(jobRepo, 'job servies');
   }
 
   async getJob(jobId: string) {
-    return await this.jobRepo.findOneByIdWithPopulate(jobId, [], [], {
-      path: 'company',
-      selectedProps: ['name', 'logo_url', 'size', 'address', '_id'],
-    });
+    return await this.jobRepo.findOneByIdWithPopulate(
+      jobId,
+      [],
+      ['__v', 'request_history'],
+      {
+        path: 'company',
+        selectedProps: ['name', 'logo_url', 'size', 'address', '_id'],
+      },
+    );
   }
 
   async createJob(
@@ -31,7 +40,6 @@ export class JobService extends BaseCRUDService<
     jobInfor: CreateJobDTO,
     createdBy: Record<string, any>,
   ) {
-    console.log('companyiud::: ', companyId);
     const {
       start_date,
       end_date,
@@ -39,6 +47,8 @@ export class JobService extends BaseCRUDService<
       max_salary,
       experience: { min, max },
     } = jobInfor;
+    /* Validate Company */
+    await this.companyService.validateCompany(companyId);
 
     /* Validate Date */
     this.validateDate(start_date, end_date);
@@ -85,6 +95,9 @@ export class JobService extends BaseCRUDService<
       experience: { min, max },
     } = jobInfor;
 
+    /* validate job */
+    await this.validateJob(jobId);
+
     /* Validate Date */
     this.validateDate(start_date, end_date);
 
@@ -111,13 +124,13 @@ export class JobService extends BaseCRUDService<
     status: string,
     updatedBy: Record<string, any>,
   ) {
-    /* validate company */
+    /* validate job */
     const job = await this.validateJob(jobId);
 
     /* Get request for change */
     const requestForChange = job.request_for_change;
 
-    /* Check status (ex: has already been revewing status, then switch to reviewing again) */
+    /* Check status (ex: has already been revewing status, but switch to reviewing again) */
     if (requestForChange.status === status) {
       throw new BadRequestException();
     }
@@ -159,7 +172,6 @@ export class JobService extends BaseCRUDService<
     if (minSalary > maxSalary) {
       throw new BadRequestException({});
     }
-
     return true;
   }
 
@@ -167,7 +179,6 @@ export class JobService extends BaseCRUDService<
     if (minYoe > maxYoe) {
       throw new BadRequestException({});
     }
-
     return true;
   }
 

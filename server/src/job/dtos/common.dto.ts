@@ -4,14 +4,17 @@ import {
   IsArray,
   IsEmail,
   IsNotEmpty,
+  IsOptional,
   IsPositive,
   IsString,
   Min,
 } from 'class-validator';
 
 export class LocationDTO {
+  @IsPositive()
   province_id: number;
 
+  @IsOptional()
   addresses?: {
     district_id: number;
     working_address: string;

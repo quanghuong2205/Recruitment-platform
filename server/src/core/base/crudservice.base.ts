@@ -4,6 +4,12 @@ import { select } from 'src/utils/mongoose/select.util';
 import { FilterQuery, Types } from 'mongoose';
 import { createObjectId } from 'src/utils/mongoose/createObjectId';
 
+interface PopulateOptions {
+  path: string;
+  selectedProps?: string[];
+  unSelectedProps?: string[];
+}
+
 export class BaseCRUDService<T, CDTO, UDTO> {
   private repository: BaseRepository<T>;
   private name: string;
@@ -55,6 +61,48 @@ export class BaseCRUDService<T, CDTO, UDTO> {
       .skip(skip)
       .sort(sortBy)
       .populate(parsedQuery.population)
+      .select(select(selectedProps, unSelectedProps));
+  }
+
+  async findManyWithPopulate(
+    query: string,
+    page: number,
+    limit: number,
+    selectedProps?: string[],
+    unSelectedProps?: string[],
+    populate?: PopulateOptions[],
+  ): Promise<T[]> {
+    /* Parse query string to object */
+    const parsedQuery = aqp(query);
+    delete parsedQuery.filter['page'];
+    delete parsedQuery.filter['limit'];
+
+    /* Default page infor */
+    const defaultLimit = limit ?? 50;
+    const defaultPage = page ?? 1;
+
+    /* Get document range */
+    const skip = (defaultPage - 1) * defaultLimit;
+
+    /* Sort condition */
+    const sortBy: Record<string, any> = parsedQuery.sort;
+
+    /* Populate */
+    const populateObjects = populate.map((g) => {
+      return {
+        path: g.path,
+        select: select(g.selectedProps, g.unSelectedProps),
+      };
+    });
+
+    /* Query documents */
+    return await this.repository
+      .getRepo()
+      .find(parsedQuery?.filter ?? {})
+      .limit(defaultLimit)
+      .skip(skip)
+      .sort(sortBy)
+      .populate(populateObjects)
       .select(select(selectedProps, unSelectedProps));
   }
 

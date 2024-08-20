@@ -144,6 +144,7 @@ export class BaseRepository<T> {
     try {
       return (await this.repo.create(props))['_doc'];
     } catch (error) {
+      console.log(error);
       throw new InternalServerErrorException({
         errorCode: ERRORCODES.DOCUMENT_FAIL_CREATE,
       });
